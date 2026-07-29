@@ -1,0 +1,2663 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0A0C10">
+<title>Cartera Chichón · Mi Bolsillo</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+/* ==========================================================
+   CARTERA CHICHÓN — Mi Bolsillo
+   Tokens: bg #0A0C10 · surface #14171D · surface2 #1B1F27
+   accent (verde neón) #34E177 · accent2 (violeta) #A66BFF
+   good #34C77B · warn #F0A93A · partial #E8C74A · bad #E5484D · info #4C8DD4
+   ========================================================== */
+
+:root{
+  --bg: #0A0C10;
+  --surface: #13161C;
+  --surface-2: #1A1E26;
+  --surface-3: #232833;
+  --border: #262B35;
+  --text: #F2F3F5;
+  --text-dim: #9198A6;
+  --text-faint: #5C6373;
+
+  --accent: #34E177;
+  --accent-dim: #1B7A42;
+  --accent-glow: rgba(52,225,119,0.18);
+  --accent-2: #A66BFF;
+  --accent-2-glow: rgba(166,107,255,0.18);
+
+  --good: #34C77B;
+  --good-bg: rgba(52,199,123,0.12);
+  --warn: #F0A93A;
+  --warn-bg: rgba(240,169,58,0.12);
+  --partial: #E8C74A;
+  --partial-bg: rgba(232,199,74,0.12);
+  --bad: #E5484D;
+  --bad-bg: rgba(229,72,77,0.12);
+  --info: #4C8DD4;
+  --info-bg: rgba(76,141,212,0.12);
+
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 22px;
+  --shadow: 0 8px 30px rgba(0,0,0,0.35);
+
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+}
+
+*{ box-sizing: border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family: var(--font);
+  background: radial-gradient(circle at 20% -10%, #171B23 0%, var(--bg) 45%) fixed;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  overflow-x:hidden;
+}
+button, input, select{ font-family: inherit; }
+.hidden{ display:none !important; }
+
+/* ---------------- LOCK SCREEN ---------------- */
+.lock-screen{
+  min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 0%, #1A1E26 0%, var(--bg) 60%);
+}
+.lock-wrap{ width:100%; max-width:360px; text-align:center; }
+.lock-logo-mark{
+  width:64px; height:64px; margin:0 auto 18px;
+  border-radius:18px;
+  background: linear-gradient(145deg, var(--accent), var(--accent-2));
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:22px; letter-spacing:0.5px;
+  color:#181008;
+  box-shadow: 0 10px 30px var(--accent-glow);
+}
+.lock-title{ font-size:22px; font-weight:700; margin:0 0 6px; letter-spacing:-0.2px; }
+.lock-sub{ color:var(--text-dim); font-size:14px; margin:0 0 34px; }
+
+.pin-dots{ display:flex; gap:16px; justify-content:center; margin-bottom:14px; }
+.pin-dot{
+  width:16px; height:16px; border-radius:50%;
+  border:2px solid var(--border);
+  background: transparent;
+  transition: all .18s ease;
+}
+.pin-dot.filled{ background: var(--accent); border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+.pin-dot.shake-active{ animation: shakeDot .12s; }
+
+.pin-error{
+  min-height:18px; color: var(--bad); font-size:13px; margin: 0 0 18px;
+  opacity:0; transition: opacity .15s;
+}
+.pin-error.show{ opacity:1; }
+
+.lock-wrap.shake{ animation: shakeWrap .35s; }
+@keyframes shakeWrap{
+  10%,90% { transform: translateX(-2px); }
+  20%,80% { transform: translateX(4px); }
+  30%,50%,70% { transform: translateX(-8px); }
+  40%,60% { transform: translateX(8px); }
+}
+
+.keypad{
+  display:grid; grid-template-columns: repeat(3,1fr);
+  gap:14px; max-width:280px; margin: 0 auto;
+}
+.key{
+  aspect-ratio:1; border-radius:50%;
+  border:1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size:20px; font-weight:600;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  transition: transform .08s ease, background .15s ease;
+}
+.key:active{ transform: scale(0.92); background: var(--surface-3); }
+.key-ghost{ background:transparent; border:none; color: var(--text-faint); font-size:13px; font-weight:500; }
+.key-ghost:active{ background: var(--surface-2); }
+
+/* ---------------- APP SHELL ---------------- */
+.app{ min-height:100vh; display:flex; flex-direction:column; padding-bottom: 84px; }
+
+.topbar{
+  position:sticky; top:0; z-index:20;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 16px 20px;
+  background: rgba(10,12,16,0.85);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.topbar-brand{ display:flex; align-items:center; gap:12px; }
+.topbar-mark{
+  width:38px; height:38px; border-radius:11px;
+  background: linear-gradient(145deg, var(--accent), var(--accent-2));
+  color:#181008; font-weight:800; font-size:14px;
+  display:flex; align-items:center; justify-content:center;
+}
+.topbar-title{ margin:0; font-size:16px; font-weight:700; }
+.topbar-date{ margin:0; font-size:12px; color:var(--text-dim); text-transform:capitalize; }
+
+.icon-btn{
+  width:38px; height:38px; border-radius:50%;
+  background: var(--surface); border:1px solid var(--border);
+  color: var(--text-dim); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition: background .15s;
+}
+.icon-btn:active{ background: var(--surface-3); }
+.icon-btn.is-hidden svg{ opacity:0.4; }
+
+.screens{ flex:1; padding: 18px 16px 24px; max-width: 760px; margin:0 auto; width:100%; }
+.screen{ display:none; animation: fadeIn .25s ease; }
+.screen.active{ display:block; }
+@keyframes fadeIn{ from{ opacity:0; transform: translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+/* ---------------- CARDS / STATS ---------------- */
+.card-grid{
+  display:grid; grid-template-columns: repeat(2,1fr); gap:12px; margin-bottom: 24px;
+}
+.card-grid--4{ grid-template-columns: repeat(2,1fr); }
+@media (min-width: 560px){
+  .card-grid{ grid-template-columns: repeat(4,1fr); }
+}
+
+.stat-card{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display:flex; flex-direction:column; gap:6px;
+}
+.stat-card--accent{ border-color: rgba(52,225,119,0.35); background: linear-gradient(160deg, var(--accent-glow), var(--surface) 60%); }
+.stat-card--good{ border-color: rgba(52,199,123,0.3); }
+.stat-card--bad{ border-color: rgba(229,72,77,0.3); }
+
+.stat-label{ margin:0; font-size:12px; color: var(--text-dim); font-weight:500; }
+.stat-value{ margin:0; font-size:20px; font-weight:800; letter-spacing:-0.3px; }
+.stat-value.money.masked{ font-size:22px; letter-spacing:2px; }
+
+.btn{
+  border:none; border-radius: var(--radius-sm);
+  padding: 11px 16px; font-size:14px; font-weight:700;
+  cursor:pointer; transition: transform .08s ease, filter .15s ease, opacity .15s;
+}
+.btn:active{ transform: scale(0.97); }
+.btn-accent{ background: linear-gradient(135deg, var(--accent), #1B7A42); color:#04160B; }
+.btn-accent:active{ filter:brightness(0.92); }
+.btn-ghost{ background: var(--surface-3); color: var(--text); }
+.btn-warn{ background: var(--warn-bg); color: var(--warn); }
+.btn-danger{ background: var(--bad-bg); color: var(--bad); }
+.btn-pay-complete{ background: linear-gradient(135deg, var(--accent), var(--accent-dim)); color:#04160B; }
+.btn-pay-partial{ background: var(--accent-2-glow); color: var(--accent-2); border:1px solid rgba(166,107,255,0.35); }
+.btn-no-pay{ background: var(--bad-bg); color: var(--bad); border:1px solid rgba(229,72,77,0.35); }
+.btn-block{ width:100%; margin-top:22px; }
+.btn-sm{ padding:8px 12px; font-size:12.5px; align-self:flex-start; margin-top:2px; }
+
+.btn.is-loading{ pointer-events:none; opacity:0.75; position:relative; color:transparent !important; }
+.btn.is-loading::after{
+  content:""; position:absolute; top:50%; left:50%; width:16px; height:16px;
+  margin:-8px 0 0 -8px; border-radius:50%;
+  border:2px solid rgba(255,255,255,0.35); border-top-color:#fff;
+  animation: spin .6s linear infinite;
+}
+@keyframes spin{ to{ transform: rotate(360deg); } }
+
+.pulse-success{ animation: pulseSuccess .5s ease; }
+@keyframes pulseSuccess{
+  0%{ box-shadow: 0 0 0 0 var(--accent-glow); }
+  60%{ box-shadow: 0 0 0 14px rgba(52,225,119,0); }
+  100%{ box-shadow: 0 0 0 0 rgba(52,225,119,0); }
+}
+
+.section-head{
+  display:flex; align-items:center; justify-content:space-between;
+  margin: 22px 0 12px;
+}
+.section-head h2{ font-size:15px; margin:0; font-weight:700; }
+.link-btn{ background:none; border:none; color: var(--accent); font-size:13px; font-weight:600; cursor:pointer; }
+
+/* ---------------- CLIENT LIST / CARDS ---------------- */
+.search-row{ margin-bottom: 16px; }
+.search-row input{
+  width:100%; padding: 12px 14px; border-radius: var(--radius-sm);
+  border:1px solid var(--border); background: var(--surface); color:var(--text); font-size:14px;
+}
+.search-row input:focus{ outline:none; border-color: var(--accent); }
+
+.client-list{ display:flex; flex-direction:column; gap:12px; }
+.empty-state{ text-align:center; color: var(--text-dim); font-size:14px; padding: 40px 10px; }
+
+.client-card{
+  background: var(--surface);
+  border:1px solid var(--border);
+  border-radius: var(--radius);
+  padding:16px;
+  cursor:pointer;
+  transition: border-color .15s, transform .08s;
+}
+.client-card:active{ transform: scale(0.99); }
+.client-card-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.client-name{ font-weight:700; font-size:15px; margin:0 0 2px; }
+.client-phone{ font-size:12px; color:var(--text-dim); margin:0; }
+
+.status-badge{
+  font-size:11.5px; font-weight:700; padding:5px 10px; border-radius:999px;
+  white-space:nowrap;
+}
+.status-badge.ok{ background: var(--good-bg); color: var(--good); }
+.status-badge.due{ background: var(--warn-bg); color: var(--warn); }
+.status-badge.partial{ background: var(--partial-bg); color: var(--partial); }
+.status-badge.late{ background: var(--bad-bg); color: var(--bad); }
+.status-badge.done{ background: var(--info-bg); color: var(--info); }
+
+.client-card-grid{
+  display:grid; grid-template-columns: repeat(3,1fr); gap:10px;
+}
+.client-metric{ display:flex; flex-direction:column; gap:2px; }
+.client-metric span{ font-size:10.5px; color: var(--text-faint); text-transform:uppercase; letter-spacing:0.4px; }
+.client-metric strong{ font-size:13.5px; font-weight:700; }
+
+.client-progress{
+  margin-top:12px; height:6px; border-radius:99px; background: var(--surface-3); overflow:hidden;
+}
+.client-progress-bar{ height:100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius:99px; transition: width .3s; }
+
+/* ---------------- PORTFOLIO MOVEMENTS ---------------- */
+.movement-list{ display:flex; flex-direction:column; gap:10px; }
+.movement-item{
+  display:flex; justify-content:space-between; align-items:center;
+  background: var(--surface); border:1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+.movement-item .m-left p{ margin:0; }
+.movement-item .m-title{ font-size:13.5px; font-weight:600; }
+.movement-item .m-date{ font-size:11.5px; color: var(--text-dim); }
+.movement-item .m-amount{ font-weight:800; font-size:14px; }
+.m-amount.pos{ color: var(--good); }
+.m-amount.neg{ color: var(--bad); }
+
+/* ---------------- PROFILE ---------------- */
+.profile-card{
+  text-align:center; padding: 30px 0 22px;
+}
+.profile-avatar{
+  width:72px; height:72px; margin:0 auto 14px; border-radius:50%;
+  background: linear-gradient(145deg, var(--accent), var(--accent-2));
+  background-size: cover; background-position:center;
+  color:#181008; font-weight:800; font-size:24px;
+  display:flex; align-items:center; justify-content:center;
+}
+.profile-avatar.has-photo{ color:transparent; }
+.profile-name{ font-size:17px; font-weight:700; margin:0 0 2px; }
+.profile-sub{ font-size:13px; color:var(--text-dim); margin:0; }
+
+.profile-photo-picker{ text-align:center; margin-bottom: 16px; }
+.profile-photo-preview{
+  width:88px; height:88px; margin:0 auto 12px; border-radius:50%;
+  background: linear-gradient(145deg, var(--accent), var(--accent-2));
+  background-size: cover; background-position:center;
+  color:#181008; font-weight:800; font-size:26px;
+  display:flex; align-items:center; justify-content:center;
+}
+.profile-photo-preview.has-photo{ color:transparent; }
+
+.profile-menu{ display:flex; flex-direction:column; gap:10px; }
+.profile-item{
+  display:flex; align-items:center; justify-content:space-between;
+  background: var(--surface); border:1px solid var(--border); border-radius: var(--radius);
+  padding: 15px 16px; font-size:14px; font-weight:600; color: var(--text);
+  cursor:pointer;
+}
+.profile-item--danger{ color: var(--bad); }
+.chev{ color: var(--text-faint); }
+
+/* ---------------- BOTTOM NAV ---------------- */
+.bottom-nav{
+  position:fixed; bottom:0; left:0; right:0; z-index:30;
+  display:flex; justify-content:space-around;
+  background: rgba(13,15,20,0.92);
+  backdrop-filter: blur(16px);
+  border-top:1px solid var(--border);
+  padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
+}
+.nav-item{
+  background:none; border:none; color: var(--text-faint);
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  font-size:10.5px; font-weight:600; padding:6px 10px; border-radius:12px;
+  cursor:pointer; transition: color .15s;
+}
+.nav-icon{ font-size:19px; line-height:1; }
+.nav-item.active{ color: var(--accent); }
+
+.fab{
+  position:fixed; right:18px; bottom:86px; z-index:29;
+  width:56px; height:56px; border-radius:50%; border:none;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+  color:#04160B; font-size:28px; font-weight:700; line-height:0;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: 0 10px 26px var(--accent-glow);
+  cursor:pointer;
+}
+.fab:active{ transform: scale(0.94); }
+
+/* ---------------- MODALS ---------------- */
+.modal-overlay{
+  position:fixed; inset:0; z-index:100;
+  background: rgba(5,6,9,0.72);
+  display:flex; align-items:flex-end; justify-content:center;
+  backdrop-filter: blur(4px);
+  animation: overlayIn .18s ease;
+}
+@keyframes overlayIn{ from{opacity:0;} to{opacity:1;} }
+@media (min-width: 640px){
+  .modal-overlay{ align-items:center; }
+}
+.modal{
+  width:100%; max-width:480px; max-height:88vh; overflow-y:auto;
+  background: var(--surface);
+  border:1px solid var(--border);
+  border-radius: 22px 22px 0 0;
+  box-shadow: var(--shadow);
+  animation: modalUp .22s cubic-bezier(.2,.8,.3,1);
+}
+@media (min-width: 640px){
+  .modal{ border-radius: var(--radius-lg); }
+}
+@keyframes modalUp{ from{ transform: translateY(24px); opacity:0;} to{ transform:translateY(0); opacity:1; } }
+.modal-sm{ max-width:340px; }
+.modal-lg{ max-width:560px; }
+
+.modal-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 18px 20px; border-bottom:1px solid var(--border);
+  position:sticky; top:0; background: var(--surface); z-index:2;
+}
+.modal-head h3{ margin:0; font-size:16px; font-weight:700; }
+.modal-close{
+  background: var(--surface-3); border:none; color:var(--text-dim);
+  width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:14px;
+}
+.modal-body{ padding: 18px 20px; display:flex; flex-direction:column; gap:14px; }
+.modal-foot{
+  display:flex; gap:10px; padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--border); position:sticky; bottom:0; background: var(--surface);
+}
+.modal-foot .btn{ flex:1; }
+
+.field{ display:flex; flex-direction:column; gap:6px; font-size:13px; color: var(--text-dim); font-weight:600; }
+.field input, .field select{
+  padding: 12px 13px; border-radius: var(--radius-sm);
+  border:1px solid var(--border); background: var(--surface-2); color: var(--text);
+  font-size:14.5px; font-weight:500;
+}
+.field input:focus, .field select:focus{ outline:none; border-color: var(--accent); }
+.field-error{ color: var(--bad); font-size:12.5px; min-height:14px; margin:0; }
+
+.preview-box{
+  background: var(--accent-glow); border:1px solid rgba(52,225,119,0.3);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+}
+.preview-row{ display:flex; justify-content:space-between; margin:4px 0; font-size:13.5px; color: var(--text-dim); }
+.preview-row--total{ color: var(--text); font-weight:800; font-size:15px; border-top:1px dashed rgba(52,225,119,0.35); padding-top:8px; margin-top:8px; }
+
+.receipt{ background: var(--surface-2); border-radius: var(--radius-sm); padding: 16px; }
+.receipt-row{ display:flex; justify-content:space-between; padding:7px 0; font-size:13.5px; color: var(--text-dim); border-bottom:1px dashed var(--border); }
+.receipt-row:last-child{ border-bottom:none; }
+.receipt-row--total{ color: var(--accent); font-weight:800; font-size:15.5px; }
+
+.status-pill{
+  display:inline-block; font-size:13px; font-weight:700; padding:7px 14px; border-radius:99px; margin:0 0 16px;
+}
+.status-pill.ok{ background: var(--good-bg); color: var(--good); }
+.status-pill.due{ background: var(--warn-bg); color: var(--warn); }
+.status-pill.partial{ background: var(--partial-bg); color: var(--partial); }
+.status-pill.late{ background: var(--bad-bg); color: var(--bad); }
+.status-pill.done{ background: var(--info-bg); color: var(--info); }
+
+.detail-grid{ display:grid; grid-template-columns: repeat(2,1fr); gap:12px; margin-bottom:16px; }
+.detail-item{
+  background: var(--surface-2); border-radius: var(--radius-sm); padding:11px 13px;
+  display:flex; flex-direction:column; gap:4px;
+}
+.detail-item span{ font-size:11px; color: var(--text-faint); text-transform:uppercase; letter-spacing:0.4px; }
+.detail-item strong{ font-size:15px; }
+
+.overdue-box{
+  background: var(--bad-bg); border:1px solid rgba(229,72,77,0.3);
+  border-radius: var(--radius-sm); padding:12px 14px; margin-bottom:16px;
+}
+.overdue-title{ margin:0 0 6px; font-weight:700; color: var(--bad); font-size:13.5px; }
+.overdue-row{ display:flex; justify-content:space-between; font-size:13px; color: var(--text-dim); margin:2px 0; }
+
+.detail-actions{ display:flex; gap:10px; margin-bottom:6px; }
+.detail-actions .btn{ flex:1; }
+.detail-actions--three{ flex-direction:column; }
+.detail-actions--three .btn{ width:100%; }
+
+.history-list{ display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto; }
+.history-item{
+  display:flex; justify-content:space-between; align-items:center;
+  background: var(--surface-2); border-radius:10px; padding:10px 12px; font-size:13px;
+}
+.history-item .h-date{ color: var(--text-dim); }
+.history-item .h-amount{ font-weight:700; }
+.history-item.no-payment .h-amount{ color: var(--bad); }
+.history-total{
+  display:flex; justify-content:space-between; margin-top:12px; padding-top:12px; border-top:1px solid var(--border);
+}
+.history-total p{ margin:0; display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--text-dim); }
+.history-total strong{ font-size:15px; color:var(--text); }
+
+.pay-info{ display:flex; justify-content:space-between; margin:0; font-size:13.5px; color: var(--text-dim); }
+.pay-info strong{ color: var(--text); }
+
+.confirm-text{ text-align:center; font-size:15px; font-weight:600; margin: 10px 0; }
+
+/* ---------------- TOASTS ---------------- */
+.toast-stack{
+  position:fixed; top:14px; left:50%; transform:translateX(-50%);
+  z-index:200; display:flex; flex-direction:column; gap:8px; width:min(92vw,380px);
+}
+.toast{
+  background: var(--surface-3); border:1px solid var(--border);
+  border-left: 4px solid var(--good);
+  border-radius: 12px; padding:11px 14px;
+  box-shadow: var(--shadow);
+  animation: toastIn .2s ease;
+}
+.toast.toast-error{ border-left-color: var(--bad); }
+@keyframes toastIn{ from{ opacity:0; transform: translateY(-10px);} to{opacity:1; transform:translateY(0);} }
+.toast p{ margin:0; }
+.toast .t-title{ font-weight:700; font-size:13.5px; }
+.toast .t-sub{ font-size:12.5px; color: var(--text-dim); margin-top:2px; }
+
+@keyframes shakeDot{ 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
+
+/* scrollbars */
+::-webkit-scrollbar{ width:6px; height:6px; }
+::-webkit-scrollbar-thumb{ background: var(--surface-3); border-radius:3px; }
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
+}
+
+/* ---------------- ONBOARDING (bienvenida) ---------------- */
+.onboarding-screen{
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  padding:24px; background: radial-gradient(circle at 50% 0%, #1A1E26 0%, var(--bg) 60%);
+}
+.ob-wrap{ width:100%; max-width:380px; }
+.ob-step{ display:none; animation: obIn .3s ease; text-align:center; }
+.ob-step.active{ display:block; }
+@keyframes obIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+.ob-emoji{ font-size:48px; margin-bottom:14px; }
+.ob-title{ font-size:22px; font-weight:800; margin:0 0 8px; letter-spacing:-0.3px; }
+.ob-sub{ color:var(--text-dim); font-size:14px; margin:0 0 28px; line-height:1.5; }
+.ob-dots{ display:flex; gap:6px; justify-content:center; margin-bottom:24px; }
+.ob-dot{ width:6px; height:6px; border-radius:50%; background:var(--border); transition: all .2s; }
+.ob-dot.active{ width:20px; background: var(--accent); }
+.ob-photo-picker{ text-align:center; margin: 4px 0 22px; }
+.ob-photo{
+  width:96px; height:96px; margin:0 auto 14px; border-radius:50%;
+  background: linear-gradient(145deg, var(--accent), var(--accent-2));
+  background-size:cover; background-position:center;
+  display:flex; align-items:center; justify-content:center;
+  color:#181008; font-weight:800; font-size:30px; cursor:pointer;
+}
+.ob-photo.has-photo{ color:transparent; }
+.ob-actions{ display:flex; flex-direction:column; gap:10px; }
+.ob-actions .btn{ width:100%; }
+
+/* ---------------- SALUDO / GREETING ---------------- */
+.home-greeting{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+.greeting-avatar{
+  width:46px; height:46px; border-radius:50%; flex-shrink:0;
+  background: linear-gradient(145deg, var(--accent), var(--accent-2));
+  background-size:cover; background-position:center;
+  display:flex; align-items:center; justify-content:center;
+  color:#181008; font-weight:800; font-size:16px;
+}
+.greeting-avatar.has-photo{ color:transparent; }
+.greeting-title{ margin:0; font-size:18px; font-weight:800; letter-spacing:-0.3px; }
+.greeting-sub{ margin:2px 0 0; font-size:12.5px; color:var(--text-dim); text-transform:capitalize; }
+
+.lock-user{ display:flex; flex-direction:column; align-items:center; margin-bottom:6px; }
+.lock-user-avatar{
+  width:56px; height:56px; border-radius:50%; margin-bottom:10px;
+  background: linear-gradient(145deg, var(--accent), var(--accent-2));
+  background-size:cover; background-position:center;
+  display:flex; align-items:center; justify-content:center;
+  color:#181008; font-weight:800; font-size:19px;
+}
+.lock-user-avatar.has-photo{ color:transparent; }
+
+/* ---------------- FRASE DINÁMICA / MAÑANA ---------------- */
+.pulse-banner{
+  background: linear-gradient(135deg, var(--accent-glow), var(--surface) 65%);
+  border:1px solid rgba(52,225,119,0.3); border-radius: var(--radius);
+  padding:14px 16px; margin-bottom:18px; font-size:13.5px; font-weight:600;
+  animation: fadeIn .3s ease;
+}
+.tomorrow-card{
+  background: var(--surface); border:1px solid var(--border); border-radius: var(--radius);
+  padding:16px; margin-bottom:18px;
+}
+.tomorrow-card h3{ margin:0 0 10px; font-size:13.5px; color:var(--text-dim); font-weight:700; }
+.tomorrow-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.tomorrow-grid .client-metric strong{ font-size:14.5px; }
+
+/* ---------------- FILTER CHIPS ---------------- */
+.filter-row{ display:flex; gap:8px; overflow-x:auto; margin-bottom:16px; padding-bottom:2px; -webkit-overflow-scrolling:touch; }
+.filter-row::-webkit-scrollbar{ display:none; }
+.chip{
+  flex-shrink:0; border:1px solid var(--border); background:var(--surface);
+  color:var(--text-dim); font-size:12.5px; font-weight:700; padding:8px 14px;
+  border-radius:999px; cursor:pointer; transition: all .15s;
+  white-space:nowrap;
+}
+.chip.active{ background: var(--accent); color:#04160B; border-color:var(--accent); }
+
+/* ---------------- CALENDARIO DE CUOTAS ---------------- */
+.schedule-list{ display:flex; flex-direction:column; gap:8px; max-height:60vh; overflow-y:auto; }
+.schedule-item{
+  display:flex; align-items:center; justify-content:space-between;
+  background: var(--surface-2); border-radius:10px; padding:10px 12px; font-size:13px;
+}
+.schedule-item.is-paid{ opacity:0.6; }
+.schedule-num{ width:26px; height:26px; border-radius:50%; background:var(--surface-3); display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700; margin-right:10px; flex-shrink:0; }
+.schedule-item.is-paid .schedule-num{ background: var(--good-bg); color:var(--good); }
+.schedule-left{ display:flex; align-items:center; }
+.schedule-date{ color:var(--text-dim); font-size:12px; }
+.schedule-amount{ font-weight:700; }
+
+/* ---------------- RECIBO DE PAGO ---------------- */
+.receipt-check{
+  width:56px; height:56px; border-radius:50%; margin:0 auto 14px;
+  background: var(--good-bg); color:var(--good);
+  display:flex; align-items:center; justify-content:center; font-size:28px;
+  animation: pulseSuccess .6s ease;
+}
+.receipt-actions{ display:flex; gap:10px; margin-top:4px; }
+.receipt-actions .btn{ flex:1; }
+
+@media print{
+  body *{ visibility:hidden; }
+  #print-area, #print-area *{ visibility:visible; }
+  #print-area{ position:absolute; top:0; left:0; width:100%; }
+}
+
+/* ---------------- ESTADO VACÍO CON EMOJI ---------------- */
+.empty-state{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+.empty-state .es-emoji{ font-size:34px; }
+
+/* ---------------- ANIMACIÓN ESCALONADA DE CARDS ---------------- */
+.client-card{ animation: cardIn .3s ease backwards; }
+.client-card:nth-child(1){ animation-delay:.02s; }
+.client-card:nth-child(2){ animation-delay:.06s; }
+.client-card:nth-child(3){ animation-delay:.10s; }
+.client-card:nth-child(4){ animation-delay:.14s; }
+.client-card:nth-child(5){ animation-delay:.18s; }
+@keyframes cardIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+</style>
+</head>
+<body>
+
+<!-- ============ ONBOARDING (solo primera vez) ============ -->
+<section id="onboarding-screen" class="onboarding-screen hidden">
+  <div class="ob-wrap">
+    <div class="ob-dots">
+      <span class="ob-dot active" data-dot="1"></span>
+      <span class="ob-dot" data-dot="2"></span>
+      <span class="ob-dot" data-dot="3"></span>
+    </div>
+
+    <!-- Paso 1: bienvenida -->
+    <div class="ob-step active" data-step="1">
+      <div class="ob-emoji">👋</div>
+      <h1 class="ob-title">Bienvenido a Cartera Chichón</h1>
+      <p class="ob-sub">Vamos a dejar tu cartera organizada. Antes de empezar, cuéntanos un poco de ti.</p>
+      <div class="ob-actions">
+        <button class="btn btn-accent" data-ob-next="2">Empezar</button>
+      </div>
+    </div>
+
+    <!-- Paso 2: nombre -->
+    <div class="ob-step" data-step="2">
+      <div class="ob-emoji">✍️</div>
+      <h1 class="ob-title">¿Cómo te llamas?</h1>
+      <p class="ob-sub">Así te vamos a saludar cada vez que abras la app.</p>
+      <div class="modal-body" style="padding:0; margin-bottom:20px;">
+        <label class="field">
+          <span>Tu nombre</span>
+          <input type="text" id="ob-name" placeholder="Ej: Joseth">
+        </label>
+        <label class="field">
+          <span>¿Cómo quieres que te llamemos? (opcional)</span>
+          <input type="text" id="ob-display-name" placeholder="Ej: Jose">
+        </label>
+        <p class="field-error" id="ob-name-error"></p>
+      </div>
+      <div class="ob-actions">
+        <button class="btn btn-accent" id="ob-name-next">Continuar</button>
+      </div>
+    </div>
+
+    <!-- Paso 3: foto -->
+    <div class="ob-step" data-step="3">
+      <div class="ob-emoji">📷</div>
+      <h1 class="ob-title">Agrega tu foto</h1>
+      <p class="ob-sub">Es completamente opcional, la puedes cambiar cuando quieras.</p>
+      <div class="ob-photo-picker">
+        <label class="ob-photo" id="ob-photo" for="ob-photo-input">📷</label>
+        <input type="file" accept="image/*" id="ob-photo-input" class="hidden">
+      </div>
+      <div class="ob-actions">
+        <button class="btn btn-accent" id="ob-finish">Listo, continuar</button>
+        <button class="btn btn-ghost" id="ob-skip">Omitir por ahora</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PANTALLA: BLOQUEO / PIN ============ -->
+<section id="lock-screen" class="lock-screen">
+  <div class="lock-wrap">
+    <div class="lock-logo">
+      <div class="lock-user hidden" id="lock-user">
+        <div class="lock-user-avatar" id="lock-user-avatar">CC</div>
+      </div>
+      <div class="lock-logo-mark" id="lock-logo-mark">CC</div>
+      <h1 class="lock-title" id="lock-title">Mi Bolsillo</h1>
+      <p class="lock-sub" id="lock-subtitle">Crea un PIN para proteger tu billetera</p>
+    </div>
+
+    <div class="pin-dots" id="pin-dots">
+      <span class="pin-dot"></span>
+      <span class="pin-dot"></span>
+      <span class="pin-dot"></span>
+      <span class="pin-dot"></span>
+    </div>
+
+    <p class="pin-error" id="pin-error"></p>
+
+    <div class="keypad" id="keypad">
+      <button class="key" data-key="1">1</button>
+      <button class="key" data-key="2">2</button>
+      <button class="key" data-key="3">3</button>
+      <button class="key" data-key="4">4</button>
+      <button class="key" data-key="5">5</button>
+      <button class="key" data-key="6">6</button>
+      <button class="key" data-key="7">7</button>
+      <button class="key" data-key="8">8</button>
+      <button class="key" data-key="9">9</button>
+      <button class="key key-ghost" data-key="clear">Borrar</button>
+      <button class="key" data-key="0">0</button>
+      <button class="key key-ghost" data-key="back">⌫</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<div id="app" class="app hidden">
+
+  <header class="topbar">
+    <div class="topbar-brand">
+      <span class="topbar-mark">CC</span>
+      <div>
+        <p class="topbar-title" id="screen-title">Inicio</p>
+        <p class="topbar-date" id="topbar-date"></p>
+      </div>
+    </div>
+    <button class="icon-btn" id="toggle-visibility" title="Mostrar/ocultar montos">
+      <svg id="eye-icon" viewBox="0 0 24 24" width="20" height="20"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 11a4 4 0 110-8 4 4 0 010 8z"/></svg>
+    </button>
+  </header>
+
+  <main class="screens">
+
+    <!-- ---------- INICIO ---------- -->
+    <section class="screen" id="screen-home">
+      <div class="home-greeting">
+        <div class="greeting-avatar" id="home-greeting-avatar">CC</div>
+        <div>
+          <p class="greeting-title" id="home-greeting-title">Qué más 👋</p>
+          <p class="greeting-sub" id="home-greeting-date"></p>
+        </div>
+      </div>
+
+      <div class="pulse-banner" id="home-pulse-banner">🔥 Vamos a organizar tu cartera.</div>
+
+      <div class="card-grid">
+        <div class="stat-card stat-card--accent">
+          <p class="stat-label">Dinero disponible</p>
+          <p class="stat-value money" id="home-available">$0</p>
+          <button class="btn btn-sm btn-accent" id="btn-add-money">+ Agregar dinero</button>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Dinero prestado</p>
+          <p class="stat-value money" id="home-lent">$0</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Capital total</p>
+          <p class="stat-value money" id="home-capital">$0</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Clientes</p>
+          <p class="stat-value" id="home-clients">0</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Pagos recibidos hoy</p>
+          <p class="stat-value" id="home-payments-today">0</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Cobros pendientes</p>
+          <p class="stat-value" id="home-pending">0</p>
+        </div>
+        <div class="stat-card stat-card--good">
+          <p class="stat-label">Dinero cobrado hoy</p>
+          <p class="stat-value money" id="home-collected-today">$0</p>
+        </div>
+        <div class="stat-card stat-card--bad">
+          <p class="stat-label">Dinero atrasado</p>
+          <p class="stat-value money" id="home-overdue">$0</p>
+        </div>
+      </div>
+
+      <div class="tomorrow-card">
+        <h3>📅 Mañana</h3>
+        <div class="tomorrow-grid">
+          <div class="client-metric"><span>Clientes</span><strong id="tom-clients">0</strong></div>
+          <div class="client-metric"><span>Programado</span><strong id="tom-scheduled">$0</strong></div>
+          <div class="client-metric"><span>Total estimado</span><strong id="tom-total">$0</strong></div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h2>Clientes recientes</h2>
+        <button class="link-btn" data-nav="clients">Ver todos</button>
+      </div>
+      <div id="home-recent-clients" class="client-list"></div>
+    </section>
+
+    <!-- ---------- CLIENTES ---------- -->
+    <section class="screen" id="screen-clients">
+      <div class="search-row">
+        <input type="text" id="client-search" placeholder="Buscar por nombre o teléfono...">
+      </div>
+      <div class="filter-row" id="client-filters">
+        <button class="chip active" data-filter="all">Todos</button>
+        <button class="chip" data-filter="today">💵 Cobran hoy</button>
+        <button class="chip" data-filter="ok">🟢 Al día</button>
+        <button class="chip" data-filter="partial">🟡 Parciales</button>
+        <button class="chip" data-filter="late">🔴 Atrasados</button>
+        <button class="chip" data-filter="done">🔵 Completados</button>
+      </div>
+      <div id="clients-list" class="client-list"></div>
+      <p class="empty-state hidden" id="clients-empty">
+        <span class="es-emoji">👥</span>
+        <span>Todavía no tienes clientes.</span>
+        <span style="font-size:12.5px;">Agrega tu primer cliente para empezar.</span>
+      </p>
+    </section>
+
+    <!-- ---------- PAGOS (del día) ---------- -->
+    <section class="screen" id="screen-payments">
+      <div class="card-grid card-grid--4">
+        <div class="stat-card stat-card--good">
+          <p class="stat-label">Pagaron hoy</p>
+          <p class="stat-value" id="pay-count-paid">0</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Pendientes</p>
+          <p class="stat-value" id="pay-count-pending">0</p>
+        </div>
+        <div class="stat-card stat-card--accent">
+          <p class="stat-label">Cobrado hoy</p>
+          <p class="stat-value money" id="pay-collected">$0</p>
+        </div>
+        <div class="stat-card stat-card--bad">
+          <p class="stat-label">No pagaron</p>
+          <p class="stat-value" id="pay-count-no">0</p>
+        </div>
+      </div>
+      <div class="section-head"><h2>Estado de hoy por cliente</h2></div>
+      <div id="today-clients-list" class="client-list"></div>
+    </section>
+
+    <!-- ---------- PORTAFOLIO ---------- -->
+    <section class="screen" id="screen-portfolio">
+      <div class="card-grid">
+        <div class="stat-card stat-card--accent">
+          <p class="stat-label">Dinero disponible</p>
+          <p class="stat-value money" id="pf-available">$0</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Dinero prestado</p>
+          <p class="stat-value money" id="pf-lent">$0</p>
+        </div>
+        <div class="stat-card stat-card--good">
+          <p class="stat-label">Capital total</p>
+          <p class="stat-value money" id="pf-capital">$0</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Interés proyectado</p>
+          <p class="stat-value money" id="pf-interest">$0</p>
+        </div>
+      </div>
+      <div class="section-head"><h2>Movimientos de dinero</h2></div>
+      <div id="pf-money-log" class="movement-list"></div>
+    </section>
+
+    <!-- ---------- PERFIL ---------- -->
+    <section class="screen" id="screen-profile">
+      <div class="profile-card">
+        <div class="profile-avatar" id="profile-avatar">CC</div>
+        <p class="profile-name" id="profile-display-name">Cartera Chichón</p>
+        <p class="profile-sub">Tu billetera personal</p>
+      </div>
+      <div class="profile-menu">
+        <button class="profile-item" id="btn-edit-profile">
+          <span>🧑 Editar perfil</span><span class="chev">›</span>
+        </button>
+        <button class="profile-item" id="btn-change-pin">
+          <span>🔐 Cambiar PIN</span><span class="chev">›</span>
+        </button>
+        <button class="profile-item" data-nav="portfolio">
+          <span>📊 Ver portafolio</span><span class="chev">›</span>
+        </button>
+        <button class="profile-item profile-item--danger" id="btn-logout">
+          <span>🚪 Cerrar sesión</span><span class="chev">›</span>
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <button class="fab hidden" id="fab-new-client">+</button>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-nav="home">
+      <span class="nav-icon">🏠</span><span>Inicio</span>
+    </button>
+    <button class="nav-item" data-nav="clients">
+      <span class="nav-icon">👥</span><span>Clientes</span>
+    </button>
+    <button class="nav-item" data-nav="payments">
+      <span class="nav-icon">💵</span><span>Pagos</span>
+    </button>
+    <button class="nav-item" data-nav="portfolio">
+      <span class="nav-icon">📈</span><span>Portafolio</span>
+    </button>
+    <button class="nav-item" data-nav="profile">
+      <span class="nav-icon">👤</span><span>Perfil</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ============ MODALES ============ -->
+
+<!-- Agregar dinero -->
+<div class="modal-overlay hidden" id="modal-add-money">
+  <div class="modal">
+    <div class="modal-head"><h3>Agregar dinero</h3><button class="modal-close" data-close="modal-add-money">✕</button></div>
+    <div class="modal-body">
+      <label class="field">
+        <span>Cantidad</span>
+        <input type="text" inputmode="numeric" id="am-amount" placeholder="$0">
+      </label>
+      <label class="field">
+        <span>Fecha</span>
+        <input type="date" id="am-date">
+      </label>
+      <label class="field">
+        <span>Nota (opcional)</span>
+        <input type="text" id="am-note" placeholder="Ej: ahorro de la semana">
+      </label>
+      <p class="field-error" id="am-error"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="modal-add-money">Cancelar</button>
+      <button class="btn btn-accent" id="am-save">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Nuevo cliente -->
+<div class="modal-overlay hidden" id="modal-new-client">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3>Nuevo cliente</h3><button class="modal-close" data-close="modal-new-client">✕</button></div>
+    <div class="modal-body">
+      <label class="field">
+        <span>Nombre</span>
+        <input type="text" id="nc-name" placeholder="Nombre del cliente">
+      </label>
+      <label class="field">
+        <span>Teléfono</span>
+        <input type="tel" id="nc-phone" placeholder="300 000 0000">
+      </label>
+      <label class="field">
+        <span>Dinero prestado</span>
+        <input type="text" inputmode="numeric" id="nc-amount" placeholder="$0">
+      </label>
+      <label class="field">
+        <span>Interés (%)</span>
+        <select id="nc-interest">
+          <option value="1">1%</option>
+          <option value="2">2%</option>
+          <option value="3">3%</option>
+          <option value="4">4%</option>
+          <option value="5">5%</option>
+          <option value="6">6%</option>
+          <option value="7">7%</option>
+          <option value="8">8%</option>
+          <option value="9">9%</option>
+          <option value="10">10%</option>
+          <option value="11">11%</option>
+          <option value="12">12%</option>
+          <option value="13">13%</option>
+          <option value="14">14%</option>
+          <option value="15">15%</option>
+          <option value="16">16%</option>
+          <option value="17">17%</option>
+          <option value="18">18%</option>
+          <option value="19">19%</option>
+          <option value="20" selected>20%</option>
+          <option value="21">21%</option>
+          <option value="22">22%</option>
+          <option value="23">23%</option>
+          <option value="24">24%</option>
+          <option value="25">25%</option>
+          <option value="26">26%</option>
+          <option value="27">27%</option>
+          <option value="28">28%</option>
+          <option value="29">29%</option>
+          <option value="30">30%</option>
+          <option value="31">31%</option>
+          <option value="32">32%</option>
+          <option value="33">33%</option>
+          <option value="34">34%</option>
+          <option value="35">35%</option>
+          <option value="36">36%</option>
+          <option value="37">37%</option>
+          <option value="38">38%</option>
+          <option value="39">39%</option>
+          <option value="40">40%</option>
+          <option value="41">41%</option>
+          <option value="42">42%</option>
+          <option value="43">43%</option>
+          <option value="44">44%</option>
+          <option value="45">45%</option>
+          <option value="46">46%</option>
+          <option value="47">47%</option>
+          <option value="48">48%</option>
+          <option value="49">49%</option>
+          <option value="50">50%</option>
+          <option value="51">51%</option>
+          <option value="52">52%</option>
+          <option value="53">53%</option>
+          <option value="54">54%</option>
+          <option value="55">55%</option>
+          <option value="56">56%</option>
+          <option value="57">57%</option>
+          <option value="58">58%</option>
+          <option value="59">59%</option>
+          <option value="60">60%</option>
+          <option value="61">61%</option>
+          <option value="62">62%</option>
+          <option value="63">63%</option>
+          <option value="64">64%</option>
+          <option value="65">65%</option>
+          <option value="66">66%</option>
+          <option value="67">67%</option>
+          <option value="68">68%</option>
+          <option value="69">69%</option>
+          <option value="70">70%</option>
+          <option value="71">71%</option>
+          <option value="72">72%</option>
+          <option value="73">73%</option>
+          <option value="74">74%</option>
+          <option value="75">75%</option>
+          <option value="76">76%</option>
+          <option value="77">77%</option>
+          <option value="78">78%</option>
+          <option value="79">79%</option>
+          <option value="80">80%</option>
+          <option value="81">81%</option>
+          <option value="82">82%</option>
+          <option value="83">83%</option>
+          <option value="84">84%</option>
+          <option value="85">85%</option>
+          <option value="86">86%</option>
+          <option value="87">87%</option>
+          <option value="88">88%</option>
+          <option value="89">89%</option>
+          <option value="90">90%</option>
+          <option value="91">91%</option>
+          <option value="92">92%</option>
+          <option value="93">93%</option>
+          <option value="94">94%</option>
+          <option value="95">95%</option>
+          <option value="96">96%</option>
+          <option value="97">97%</option>
+          <option value="98">98%</option>
+          <option value="99">99%</option>
+          <option value="100">100%</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Número de cuotas</span>
+        <input type="text" inputmode="numeric" id="nc-installment-count" placeholder="0">
+      </label>
+      <label class="field">
+        <span>Frecuencia de pago</span>
+        <select id="nc-frequency">
+          <option value="1">Diario</option>
+          <option value="2">Cada 2 días</option>
+          <option value="3">Cada 3 días</option>
+          <option value="4">Cada 4 días</option>
+          <option value="5">Cada 5 días</option>
+          <option value="7">Semanal</option>
+          <option value="15">Quincenal</option>
+          <option value="30">Mensual</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Fecha del próximo cobro</span>
+        <input type="date" id="nc-next-date">
+      </label>
+      <label class="field">
+        <span>Nota (opcional)</span>
+        <input type="text" id="nc-note" placeholder="Nota interna">
+      </label>
+
+      <div class="preview-box" id="nc-preview">
+        <p class="preview-row"><span>Interés generado</span><span id="nc-preview-interest">$0</span></p>
+        <p class="preview-row"><span>Total a cobrar</span><span id="nc-preview-total">$0</span></p>
+        <p class="preview-row preview-row--total"><span>Valor de cada cuota</span><span id="nc-preview-installment">$0</span></p>
+      </div>
+      <p class="field-error" id="nc-error"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="modal-new-client">Cancelar</button>
+      <button class="btn btn-accent" id="nc-save">Guardar cliente</button>
+    </div>
+  </div>
+</div>
+
+<!-- Factura del préstamo -->
+<div class="modal-overlay hidden" id="modal-receipt">
+  <div class="modal">
+    <div class="modal-head"><h3>🧾 Factura del préstamo</h3><button class="modal-close" data-close="modal-receipt">✕</button></div>
+    <div class="modal-body">
+      <div class="receipt">
+        <p class="receipt-row"><span>Cliente</span><span id="rc-name">-</span></p>
+        <p class="receipt-row"><span>Prestado</span><span id="rc-amount">$0</span></p>
+        <p class="receipt-row"><span>Interés</span><span id="rc-interest">$0</span></p>
+        <p class="receipt-row receipt-row--total"><span>Total a cobrar</span><span id="rc-total">$0</span></p>
+        <p class="receipt-row"><span>Cuota</span><span id="rc-installment">$0</span></p>
+        <p class="receipt-row"><span>Primer cobro</span><span id="rc-date">-</span></p>
+      </div>
+    </div>
+    <div class="modal-foot" style="flex-direction:column;">
+      <div class="receipt-actions">
+        <button class="btn btn-ghost" id="rc-print">🖨️ Imprimir / PDF</button>
+        <button class="btn btn-ghost" id="rc-share">📤 Compartir</button>
+      </div>
+      <button class="btn btn-accent btn-block" data-close="modal-receipt">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Detalle de cliente -->
+<div class="modal-overlay hidden" id="modal-client-detail">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="cd-name">Cliente</h3><button class="modal-close" data-close="modal-client-detail">✕</button></div>
+    <div class="modal-body">
+      <p class="status-pill" id="cd-status">🟢 Al día</p>
+
+      <div class="detail-grid">
+        <div class="detail-item"><span>Prestado</span><strong id="cd-amount">$0</strong></div>
+        <div class="detail-item"><span>Total a cobrar</span><strong id="cd-total">$0</strong></div>
+        <div class="detail-item"><span>Total pagado</span><strong id="cd-paid">$0</strong></div>
+        <div class="detail-item"><span>Saldo</span><strong id="cd-balance">$0</strong></div>
+        <div class="detail-item"><span>Cuota</span><strong id="cd-installment">$0</strong></div>
+        <div class="detail-item"><span>Cuotas pagadas</span><strong id="cd-paid-count">0</strong></div>
+        <div class="detail-item"><span>Cuotas pendientes</span><strong id="cd-pending-count">0</strong></div>
+        <div class="detail-item"><span>Próximo cobro</span><strong id="cd-next">-</strong></div>
+      </div>
+
+      <div class="overdue-box hidden" id="cd-overdue-box">
+        <p class="overdue-title">⚠️ Cuotas atrasadas</p>
+        <p class="overdue-row"><span>Cuotas pendientes</span><span id="cd-overdue-count">0</span></p>
+        <p class="overdue-row"><span>Valor pendiente</span><span id="cd-overdue-amount">$0</span></p>
+      </div>
+
+      <div class="detail-actions detail-actions--three">
+        <button class="btn btn-pay-complete" id="cd-pay-complete-btn">💵 Pagó completo</button>
+        <button class="btn btn-pay-partial" id="cd-pay-partial-btn">💰 Pago parcial</button>
+        <button class="btn btn-no-pay" id="cd-nopay-btn">❌ No pagó</button>
+        <button class="btn btn-ghost" id="cd-calendar-btn">📅 Ver calendario de cuotas</button>
+      </div>
+
+      <div class="section-head"><h2>Historial de pagos</h2></div>
+      <div id="cd-history" class="history-list"></div>
+      <div class="history-total">
+        <p><span>Total pagado</span><strong id="cd-history-paid">$0</strong></p>
+        <p><span>Saldo</span><strong id="cd-history-balance">$0</strong></p>
+      </div>
+
+      <button class="btn btn-danger btn-block" id="cd-delete-btn">Eliminar cliente</button>
+    </div>
+  </div>
+</div>
+
+<!-- Registrar pago -->
+<div class="modal-overlay hidden" id="modal-pay">
+  <div class="modal">
+    <div class="modal-head"><h3>Registrar pago parcial</h3><button class="modal-close" data-close="modal-pay">✕</button></div>
+    <div class="modal-body">
+      <p class="pay-info"><span>Cliente</span><strong id="pay-client-name">-</strong></p>
+      <p class="pay-info"><span>Cuota esperada</span><strong id="pay-installment">$0</strong></p>
+      <p class="pay-info"><span>Saldo anterior</span><strong id="pay-prev-balance">$0</strong></p>
+      <p class="pay-info"><span>Total pendiente</span><strong id="pay-total-pending">$0</strong></p>
+      <label class="field">
+        <span>¿Cuánto pagó?</span>
+        <input type="text" inputmode="numeric" id="pay-amount" placeholder="$0">
+      </label>
+      <p class="field-error" id="pay-error"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="modal-pay">Cancelar</button>
+      <button class="btn btn-accent" id="pay-save">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Calendario de cuotas -->
+<div class="modal-overlay hidden" id="modal-schedule">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3>📅 Calendario de <span id="sch-name">cuotas</span></h3><button class="modal-close" data-close="modal-schedule">✕</button></div>
+    <div class="modal-body">
+      <div id="schedule-list" class="schedule-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Recibo de pago -->
+<div class="modal-overlay hidden" id="modal-payment-receipt">
+  <div class="modal">
+    <div class="modal-head"><h3>🧾 Recibo de pago</h3><button class="modal-close" data-close="modal-payment-receipt">✕</button></div>
+    <div class="modal-body">
+      <div id="print-area">
+        <div class="receipt-check" id="pr-check">✓</div>
+        <div class="receipt">
+          <p class="receipt-row"><span>Cartera</span><span>Cartera Chichón</span></p>
+          <p class="receipt-row"><span>Cliente</span><span id="pr-name">-</span></p>
+          <p class="receipt-row"><span>Fecha</span><span id="pr-date">-</span></p>
+          <p class="receipt-row"><span>Hora</span><span id="pr-time">-</span></p>
+          <p class="receipt-row"><span>Cuota</span><span id="pr-installment">$0</span></p>
+          <p class="receipt-row"><span>Pagó</span><span id="pr-paid">$0</span></p>
+          <p class="receipt-row"><span>Pendiente de esta cuota</span><span id="pr-installment-pending">$0</span></p>
+          <p class="receipt-row receipt-row--total"><span>Saldo pendiente</span><span id="pr-balance">$0</span></p>
+          <p class="receipt-row"><span>Estado</span><span id="pr-status">✓ Pago registrado</span></p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot" style="flex-direction:column;">
+      <div class="receipt-actions">
+        <button class="btn btn-ghost" id="pr-print">🖨️ Imprimir / PDF</button>
+        <button class="btn btn-ghost" id="pr-share">📤 Compartir</button>
+      </div>
+      <button class="btn btn-accent btn-block" data-close="modal-payment-receipt">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cambiar PIN -->
+<div class="modal-overlay hidden" id="modal-change-pin">
+  <div class="modal">
+    <div class="modal-head"><h3>Cambiar PIN</h3><button class="modal-close" data-close="modal-change-pin">✕</button></div>
+    <div class="modal-body">
+      <label class="field">
+        <span>PIN actual</span>
+        <input type="password" inputmode="numeric" maxlength="4" id="cp-current" placeholder="••••">
+      </label>
+      <label class="field">
+        <span>Nuevo PIN</span>
+        <input type="password" inputmode="numeric" maxlength="4" id="cp-new" placeholder="••••">
+      </label>
+      <label class="field">
+        <span>Confirmar nuevo PIN</span>
+        <input type="password" inputmode="numeric" maxlength="4" id="cp-confirm" placeholder="••••">
+      </label>
+      <p class="field-error" id="cp-error"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="modal-change-pin">Cancelar</button>
+      <button class="btn btn-accent" id="cp-save">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmación genérica -->
+<div class="modal-overlay hidden" id="modal-confirm">
+  <div class="modal modal-sm">
+    <div class="modal-body">
+      <p class="confirm-text" id="confirm-text">¿Estás seguro?</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="confirm-cancel">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-ok">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toasts -->
+<div class="toast-stack" id="toast-stack"></div>
+
+<!-- Editar perfil -->
+<div class="modal-overlay hidden" id="modal-edit-profile">
+  <div class="modal">
+    <div class="modal-head"><h3>Editar perfil</h3><button class="modal-close" data-close="modal-edit-profile">✕</button></div>
+    <div class="modal-body">
+      <div class="profile-photo-picker">
+        <div class="profile-photo-preview" id="ep-photo-preview">CC</div>
+        <label class="btn btn-ghost btn-block" for="ep-photo-input">📷 Elegir foto</label>
+        <input type="file" accept="image/*" id="ep-photo-input" class="hidden">
+      </div>
+      <label class="field">
+        <span>Tu nombre</span>
+        <input type="text" id="ep-name" placeholder="¿Cómo te llamas?">
+      </label>
+      <label class="field">
+        <span>Nombre para mostrar (opcional)</span>
+        <input type="text" id="ep-display-name" placeholder="Ej: Jose">
+      </label>
+      <p class="field-error" id="ep-error"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="modal-edit-profile">Cancelar</button>
+      <button class="btn btn-accent" id="ep-save">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==========================================================
+   CARTERA CHICHÓN — Mi Bolsillo
+   Lógica de la aplicación (sin frameworks, localStorage)
+   ========================================================== */
+
+(function () {
+  "use strict";
+
+  /* ---------------- CLAVES DE ALMACENAMIENTO ---------------- */
+  const KEYS = {
+    PIN: "mb_pin",
+    MONEY: "mb_money",
+    CLIENTS: "mb_clients",
+    PAYMENTS: "mb_payments",
+    MONEY_VISIBLE: "mb_money_visible",
+    MONEY_LOG: "mb_money_log",
+  };
+
+  /* ---------------- HELPERS DE ALMACENAMIENTO ---------------- */
+  function getJSON(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw === null ? fallback : JSON.parse(raw);
+    } catch (e) {
+      return fallback;
+    }
+  }
+  function setJSON(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  /* ---------------- ESTADO EN MEMORIA ---------------- */
+  let state = {
+    money: getJSON(KEYS.MONEY, 0),
+    clients: getJSON(KEYS.CLIENTS, []),
+    payments: getJSON(KEYS.PAYMENTS, []),
+    moneyLog: getJSON(KEYS.MONEY_LOG, []),
+    moneyVisible: getJSON(KEYS.MONEY_VISIBLE, true),
+  };
+
+  function persistMoney() { setJSON(KEYS.MONEY, state.money); }
+  function persistClients() { setJSON(KEYS.CLIENTS, state.clients); }
+  function persistPayments() { setJSON(KEYS.PAYMENTS, state.payments); }
+  function persistMoneyLog() { setJSON(KEYS.MONEY_LOG, state.moneyLog); }
+  function persistVisible() { setJSON(KEYS.MONEY_VISIBLE, state.moneyVisible); }
+
+  /* ---------------- UTILIDADES ---------------- */
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  function escapeHTML(str) {
+    if (str === null || str === undefined) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  const moneyFormatter = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 });
+  function formatMoney(n) {
+    const val = Math.round(Number(n) || 0);
+    return "$" + moneyFormatter.format(val);
+  }
+
+  function parseMoneyInput(str) {
+    if (!str) return 0;
+    const digits = String(str).replace(/[^\d]/g, "");
+    return digits ? parseInt(digits, 10) : 0;
+  }
+
+  function formatDateDisplay(dateStr) {
+    if (!dateStr) return "-";
+    const d = parseDateOnly(dateStr);
+    if (!d) return "-";
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  function todayISO() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  function parseDateOnly(iso) {
+    if (!iso) return null;
+    const parts = iso.split("-");
+    if (parts.length !== 3) return null;
+    return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+  }
+
+  function addDays(date, days) {
+    const d = new Date(date.getTime());
+    d.setDate(d.getDate() + days);
+    return d;
+  }
+
+  function diffDays(a, b) {
+    const MS = 24 * 60 * 60 * 1000;
+    return Math.round((a.getTime() - b.getTime()) / MS);
+  }
+
+  function todayDateOnly() {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  /* ---------------- ESTADO DE CARGA EN BOTONES ---------------- */
+  function withLoading(btn, action, delay) {
+    if (!btn || btn.classList.contains("is-loading")) return;
+    btn.classList.add("is-loading");
+    setTimeout(() => {
+      action();
+      btn.classList.remove("is-loading");
+    }, delay || 380);
+  }
+
+  function pulse(el) {
+    if (!el) return;
+    el.classList.remove("pulse-success");
+    void el.offsetWidth; // reiniciar animación si ya estaba
+    el.classList.add("pulse-success");
+    setTimeout(() => el.classList.remove("pulse-success"), 550);
+  }
+
+  /* ---------------- TOASTS ---------------- */
+  function toast(title, sub, isError) {
+    const stack = document.getElementById("toast-stack");
+    const el = document.createElement("div");
+    el.className = "toast" + (isError ? " toast-error" : "");
+    el.innerHTML = `<p class="t-title">${escapeHTML(title)}</p>${sub ? `<p class="t-sub">${escapeHTML(sub)}</p>` : ""}`;
+    stack.appendChild(el);
+    setTimeout(() => {
+      el.style.opacity = "0";
+      el.style.transition = "opacity .25s";
+      setTimeout(() => el.remove(), 250);
+    }, 3200);
+  }
+
+  /* ==========================================================
+     PANTALLA DE PIN
+     ========================================================== */
+  const lockScreen = document.getElementById("lock-screen");
+  const appEl = document.getElementById("app");
+  const pinDotsEl = document.getElementById("pin-dots");
+  const pinErrorEl = document.getElementById("pin-error");
+  const lockSubtitle = document.getElementById("lock-subtitle");
+  const lockWrap = document.querySelector(".lock-wrap");
+
+  let pinMode = "login"; // 'create' | 'confirm' | 'login'
+  let pinBuffer = "";
+  let firstPin = "";
+  let onLoginSuccess = null;
+
+  function hasPin() {
+    return !!localStorage.getItem(KEYS.PIN);
+  }
+
+  function initLockScreen() {
+    const profile = getProfile();
+    const lockUserEl = document.getElementById("lock-user");
+    const lockLogoMark = document.getElementById("lock-logo-mark");
+    const lockTitle = document.getElementById("lock-title");
+    const lockUserAvatar = document.getElementById("lock-user-avatar");
+    const greetName = profile.displayName || profile.name;
+
+    if (hasPin()) {
+      pinMode = "login";
+      if (greetName) {
+        lockUserEl.classList.remove("hidden");
+        lockLogoMark.classList.add("hidden");
+        lockTitle.textContent = `Qué más, ${greetName} 👋`;
+        lockSubtitle.textContent = "Ingresa tu PIN para continuar 🔐";
+        if (profile.photo) {
+          lockUserAvatar.style.backgroundImage = `url(${profile.photo})`;
+          lockUserAvatar.classList.add("has-photo");
+          lockUserAvatar.textContent = "";
+        } else {
+          lockUserAvatar.style.backgroundImage = "";
+          lockUserAvatar.classList.remove("has-photo");
+          lockUserAvatar.textContent = initials(profile.name);
+        }
+      } else {
+        lockUserEl.classList.add("hidden");
+        lockLogoMark.classList.remove("hidden");
+        lockTitle.textContent = "Mi Bolsillo";
+        lockSubtitle.textContent = "Ingresa tu PIN para continuar";
+      }
+    } else {
+      pinMode = "create";
+      lockUserEl.classList.add("hidden");
+      lockLogoMark.classList.remove("hidden");
+      lockTitle.textContent = "Mi Bolsillo";
+      lockSubtitle.textContent = "Crea un PIN de 4 números para proteger tu billetera";
+    }
+    pinBuffer = "";
+    renderPinDots();
+  }
+
+  /* ==========================================================
+     ONBOARDING — solo se muestra en instalación realmente nueva
+     ========================================================== */
+  const onboardingScreen = document.getElementById("onboarding-screen");
+  let obName = "";
+  let obDisplayName = "";
+  let obPhotoData = null;
+
+  function isBrandNewInstall() {
+    return !hasPin() && !getProfile().name;
+  }
+
+  function obGoToStep(n) {
+    document.querySelectorAll(".ob-step").forEach((s) => s.classList.toggle("active", s.dataset.step === String(n)));
+    document.querySelectorAll(".ob-dot").forEach((d) => d.classList.toggle("active", d.dataset.dot === String(n)));
+  }
+  document.querySelectorAll("[data-ob-next]").forEach((btn) => {
+    btn.addEventListener("click", () => obGoToStep(btn.dataset.obNext));
+  });
+
+  document.getElementById("ob-name-next").addEventListener("click", () => {
+    const name = document.getElementById("ob-name").value.trim();
+    const errorEl = document.getElementById("ob-name-error");
+    if (!name) { errorEl.textContent = "Escribe tu nombre para continuar."; return; }
+    errorEl.textContent = "";
+    obName = name;
+    obDisplayName = document.getElementById("ob-display-name").value.trim();
+    obGoToStep(3);
+  });
+
+  document.getElementById("ob-photo-input").addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      obPhotoData = reader.result;
+      const preview = document.getElementById("ob-photo");
+      preview.style.backgroundImage = `url(${obPhotoData})`;
+      preview.classList.add("has-photo");
+      preview.textContent = "";
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function finishOnboarding() {
+    setProfile({ name: obName, displayName: obDisplayName, photo: obPhotoData || "", createdAt: Date.now() });
+    onboardingScreen.classList.add("hidden");
+    lockScreen.classList.remove("hidden");
+    renderProfile();
+    initLockScreen();
+    toast(`¡Bienvenido, ${obDisplayName || obName}! 👋`, "Ahora crea tu PIN para proteger tu billetera.");
+  }
+  document.getElementById("ob-finish").addEventListener("click", finishOnboarding);
+  document.getElementById("ob-skip").addEventListener("click", finishOnboarding);
+
+  function bootApp() {
+    if (isBrandNewInstall()) {
+      lockScreen.classList.add("hidden");
+      onboardingScreen.classList.remove("hidden");
+      obGoToStep(1);
+    } else {
+      onboardingScreen.classList.add("hidden");
+      lockScreen.classList.remove("hidden");
+      initLockScreen();
+    }
+  }
+
+  function renderPinDots() {
+    const dots = pinDotsEl.querySelectorAll(".pin-dot");
+    dots.forEach((dot, i) => {
+      dot.classList.toggle("filled", i < pinBuffer.length);
+    });
+  }
+
+  function showPinError(msg) {
+    pinErrorEl.textContent = msg;
+    pinErrorEl.classList.add("show");
+    lockWrap.classList.add("shake");
+    setTimeout(() => lockWrap.classList.remove("shake"), 350);
+    setTimeout(() => {
+      pinErrorEl.classList.remove("show");
+    }, 1400);
+  }
+
+  function handlePinKey(key) {
+    if (key === "clear") {
+      pinBuffer = "";
+      renderPinDots();
+      return;
+    }
+    if (key === "back") {
+      pinBuffer = pinBuffer.slice(0, -1);
+      renderPinDots();
+      return;
+    }
+    if (pinBuffer.length >= 4) return;
+    pinBuffer += key;
+    renderPinDots();
+    if (pinBuffer.length === 4) {
+      setTimeout(() => processPinComplete(), 120);
+    }
+  }
+
+  function processPinComplete() {
+    if (pinMode === "create") {
+      firstPin = pinBuffer;
+      pinBuffer = "";
+      renderPinDots();
+      pinMode = "confirm";
+      lockSubtitle.textContent = "Confirma tu nuevo PIN";
+      return;
+    }
+    if (pinMode === "confirm") {
+      if (pinBuffer === firstPin) {
+        localStorage.setItem(KEYS.PIN, firstPin);
+        toast("✓ PIN creado", "Tu billetera está protegida.");
+        enterApp();
+      } else {
+        showPinError("Los PIN no coinciden. Intenta otra vez.");
+        pinBuffer = "";
+        firstPin = "";
+        pinMode = "create";
+        lockSubtitle.textContent = "Crea un PIN de 4 números para proteger tu billetera";
+        renderPinDots();
+      }
+      return;
+    }
+    if (pinMode === "login") {
+      const saved = localStorage.getItem(KEYS.PIN);
+      if (pinBuffer === saved) {
+        pinBuffer = "";
+        renderPinDots();
+        enterApp();
+      } else {
+        showPinError("PIN incorrecto");
+        pinBuffer = "";
+        renderPinDots();
+      }
+    }
+  }
+
+  function enterApp() {
+    lockScreen.classList.add("hidden");
+    appEl.classList.remove("hidden");
+    refreshAll();
+  }
+
+  document.getElementById("keypad").addEventListener("click", (e) => {
+    const btn = e.target.closest(".key");
+    if (!btn) return;
+    handlePinKey(btn.dataset.key);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (lockScreen.classList.contains("hidden")) return;
+    if (e.key >= "0" && e.key <= "9") handlePinKey(e.key);
+    else if (e.key === "Backspace") handlePinKey("back");
+    else if (e.key === "Escape") handlePinKey("clear");
+  });
+
+  /* ==========================================================
+     NAVEGACIÓN
+     ========================================================== */
+  const screens = {
+    home: document.getElementById("screen-home"),
+    clients: document.getElementById("screen-clients"),
+    payments: document.getElementById("screen-payments"),
+    portfolio: document.getElementById("screen-portfolio"),
+    profile: document.getElementById("screen-profile"),
+  };
+  const screenTitles = {
+    home: "Inicio",
+    clients: "Clientes",
+    payments: "Pagos",
+    portfolio: "Portafolio",
+    profile: "Perfil",
+  };
+  const fab = document.getElementById("fab-new-client");
+
+  function goTo(name) {
+    Object.keys(screens).forEach((k) => screens[k].classList.toggle("active", k === name));
+    document.querySelectorAll(".nav-item").forEach((n) => n.classList.toggle("active", n.dataset.nav === name));
+    document.getElementById("screen-title").textContent = screenTitles[name];
+    fab.classList.toggle("hidden", name !== "clients");
+    if (name === "home") renderHome();
+    if (name === "clients") renderClients();
+    if (name === "payments") renderPaymentsScreen();
+    if (name === "portfolio") renderPortfolio();
+    if (name === "profile") renderProfile();
+  }
+
+  document.querySelectorAll("[data-nav]").forEach((el) => {
+    el.addEventListener("click", () => goTo(el.dataset.nav));
+  });
+
+  /* ---------------- FECHA EN TOPBAR ---------------- */
+  function renderTopbarDate() {
+    const d = new Date();
+    const opts = { weekday: "long", day: "numeric", month: "long" };
+    document.getElementById("topbar-date").textContent = d.toLocaleDateString("es-CO", opts);
+  }
+
+  /* ---------------- MOSTRAR / OCULTAR DINERO ---------------- */
+  const toggleVisBtn = document.getElementById("toggle-visibility");
+  function applyVisibility() {
+    toggleVisBtn.classList.toggle("is-hidden", !state.moneyVisible);
+    refreshAll();
+  }
+  toggleVisBtn.addEventListener("click", () => {
+    state.moneyVisible = !state.moneyVisible;
+    persistVisible();
+    applyVisibility();
+  });
+  function displayMoney(n) {
+    return state.moneyVisible ? formatMoney(n) : "••••••";
+  }
+
+  /* ==========================================================
+     CÁLCULOS DE CLIENTE
+     ========================================================== */
+  function clientTotals(client) {
+    const payments = state.payments.filter((p) => p.clientId === client.id && p.type === "payment");
+    const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+    const remaining = Math.max(0, client.totalToCollect - totalPaid);
+    let paidInstallments = client.installment > 0 ? Math.floor(totalPaid / client.installment) : 0;
+    paidInstallments = Math.min(paidInstallments, client.installmentCount);
+    const pendingInstallments = Math.max(0, client.installmentCount - paidInstallments);
+    return { totalPaid, remaining, paidInstallments, pendingInstallments, payments };
+  }
+
+  function currentDueDate(client, paidInstallments) {
+    const first = parseDateOnly(client.nextPaymentDate);
+    if (!first) return null;
+    return addDays(first, paidInstallments * client.frequency);
+  }
+
+  function paidToday(client) {
+    const t = todayISO();
+    return state.payments.some((p) => p.clientId === client.id && p.type === "payment" && p.date === t);
+  }
+
+  function markedNoPayToday(client) {
+    const t = todayISO();
+    return state.payments.some((p) => p.clientId === client.id && p.type === "no_payment" && p.date === t);
+  }
+
+  function clientStatus(client) {
+    const { remaining, paidInstallments, pendingInstallments } = clientTotals(client);
+    if (remaining <= 0) {
+      return { code: "done", label: "✅ Préstamo pagado", cls: "done" };
+    }
+    const due = currentDueDate(client, paidInstallments);
+    const today = todayDateOnly();
+    const dueOnly = due ? new Date(due.getFullYear(), due.getMonth(), due.getDate()) : today;
+    const d = diffDays(today, dueOnly);
+
+    if (d === 0) {
+      if (markedNoPayToday(client)) return { code: "late", label: "🔴 No pagó", cls: "late" };
+      if (paidToday(client)) return { code: "partial", label: "🟡 Pago parcial", cls: "partial" };
+      return { code: "due", label: "🟠 Tiene pendiente", cls: "due" };
+    }
+    if (d > 0) {
+      return { code: "late", label: "🔴 Atrasado", cls: "late" };
+    }
+    return { code: "ok", label: "🟢 Al día", cls: "ok" };
+  }
+
+  function overdueInfo(client) {
+    const { remaining, paidInstallments, pendingInstallments } = clientTotals(client);
+    const status = clientStatus(client);
+    if (status.code !== "late" || remaining <= 0) return { installments: 0, amount: 0 };
+    const due = currentDueDate(client, paidInstallments);
+    const today = todayDateOnly();
+    const dueOnly = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+    const daysLate = Math.max(0, diffDays(today, dueOnly));
+    let installmentsLate = client.frequency > 0 ? Math.floor(daysLate / client.frequency) + 1 : 1;
+    installmentsLate = Math.min(installmentsLate, pendingInstallments);
+    const amount = Math.min(remaining, installmentsLate * client.installment);
+    return { installments: installmentsLate, amount };
+  }
+
+  /* ==========================================================
+     RENDER: INICIO
+     ========================================================== */
+  function renderHome() {
+    const lent = state.clients.reduce((sum, c) => sum + clientTotals(c).remaining, 0);
+    const capital = state.money + lent;
+    const t = todayISO();
+    const paymentsToday = state.payments.filter((p) => p.type === "payment" && p.date === t);
+    const collectedToday = paymentsToday.reduce((s, p) => s + p.amount, 0);
+    const pendingClients = state.clients.filter((c) => clientTotals(c).remaining > 0).length;
+    let overdueMoney = 0;
+    state.clients.forEach((c) => { overdueMoney += overdueInfo(c).amount; });
+
+    setText("home-available", displayMoney(state.money));
+    setText("home-lent", displayMoney(lent));
+    setText("home-capital", displayMoney(capital));
+    setText("home-clients", state.clients.length);
+    setText("home-payments-today", paymentsToday.length);
+    setText("home-pending", pendingClients);
+    setText("home-collected-today", displayMoney(collectedToday));
+    setText("home-overdue", displayMoney(overdueMoney));
+
+    /* ---- Saludo personalizado ---- */
+    const profile = getProfile();
+    const greetName = profile.displayName || profile.name;
+    setText("home-greeting-title", greetName ? `Qué más, ${greetName} 👋` : "Qué más 👋");
+    setText("home-greeting-date", new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" }));
+    const gAvatar = document.getElementById("home-greeting-avatar");
+    if (profile.photo) {
+      gAvatar.style.backgroundImage = `url(${profile.photo})`;
+      gAvatar.classList.add("has-photo");
+      gAvatar.textContent = "";
+    } else {
+      gAvatar.style.backgroundImage = "";
+      gAvatar.classList.remove("has-photo");
+      gAvatar.textContent = initials(profile.name);
+    }
+
+    /* ---- Frase dinámica del día ---- */
+    const dueTodayClients = state.clients.filter((c) => {
+      const totals = clientTotals(c);
+      return totals.remaining > 0 && currentDueDateISO(c, totals.paidInstallments) === t;
+    });
+    const dueTodayTotal = dueTodayClients.reduce((s, c) => s + c.installment, 0);
+    let phrase;
+    if (dueTodayClients.length === 0) {
+      phrase = overdueMoney > 0
+        ? `⚠️ Hoy no tienes cobros programados, pero tienes ${formatMoney(overdueMoney)} atrasado.`
+        : "🎉 Hoy no tienes cobros pendientes. Todo tranquilo.";
+    } else {
+      const pct = dueTodayTotal > 0 ? Math.min(100, Math.round((collectedToday / dueTodayTotal) * 100)) : 0;
+      if (pct >= 100) phrase = "🎉 Terminaste los cobros de hoy.";
+      else if (pct > 0) phrase = `🔥 Vas bien, ya cobraste el ${pct}% de hoy.`;
+      else phrase = `⚠️ Todavía tienes ${dueTodayClients.length} cobro${dueTodayClients.length === 1 ? "" : "s"} pendiente${dueTodayClients.length === 1 ? "" : "s"} hoy.`;
+    }
+    setText("home-pulse-banner", phrase);
+
+    /* ---- Resumen de mañana ---- */
+    const tomorrowDate = addDays(todayDateOnly(), 1);
+    const tomorrowISO = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth() + 1).padStart(2, "0")}-${String(tomorrowDate.getDate()).padStart(2, "0")}`;
+    const tomClients = state.clients.filter((c) => {
+      const totals = clientTotals(c);
+      return totals.remaining > 0 && currentDueDateISO(c, totals.paidInstallments) === tomorrowISO;
+    });
+    const tomScheduled = tomClients.reduce((s, c) => s + c.installment, 0);
+    setText("tom-clients", tomClients.length);
+    setText("tom-scheduled", displayMoney(tomScheduled));
+    setText("tom-total", displayMoney(tomScheduled + overdueMoney));
+
+    const recent = [...state.clients].sort((a, b) => b.createdAt - a.createdAt).slice(0, 4);
+    const container = document.getElementById("home-recent-clients");
+    container.innerHTML = recent.length
+      ? recent.map(renderClientCard).join("")
+      : `<p class="empty-state"><span class="es-emoji">🔥</span><span>Aún no tienes clientes registrados.</span></p>`;
+    bindClientCards(container);
+  }
+
+  function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+
+  /* ==========================================================
+     RENDER: TARJETA DE CLIENTE
+     ========================================================== */
+  function renderClientCard(client) {
+    const totals = clientTotals(client);
+    const status = clientStatus(client);
+    const progress = client.totalToCollect > 0 ? Math.min(100, Math.round((totals.totalPaid / client.totalToCollect) * 100)) : 0;
+    return `
+      <div class="client-card" data-id="${client.id}">
+        <div class="client-card-top">
+          <div>
+            <p class="client-name">${escapeHTML(client.name)}</p>
+            <p class="client-phone">${escapeHTML(client.phone || "Sin teléfono")}</p>
+          </div>
+          <span class="status-badge ${status.cls}">${status.label}</span>
+        </div>
+        <div class="client-card-grid">
+          <div class="client-metric"><span>Prestado</span><strong>${displayMoney(client.amount)}</strong></div>
+          <div class="client-metric"><span>Saldo</span><strong>${displayMoney(totals.remaining)}</strong></div>
+          <div class="client-metric"><span>Cuota</span><strong>${displayMoney(client.installment)}</strong></div>
+          <div class="client-metric"><span>Pagadas</span><strong>${totals.paidInstallments}</strong></div>
+          <div class="client-metric"><span>Pendientes</span><strong>${totals.pendingInstallments}</strong></div>
+          <div class="client-metric"><span>Próx. cobro</span><strong>${formatDateDisplay(currentDueDateISO(client, totals.paidInstallments))}</strong></div>
+        </div>
+        <div class="client-progress"><div class="client-progress-bar" style="width:${progress}%"></div></div>
+      </div>`;
+  }
+
+  function currentDueDateISO(client, paidInstallments) {
+    const d = currentDueDate(client, paidInstallments);
+    if (!d) return null;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  /* ---------------- CALENDARIO AUTOMÁTICO DE CUOTAS ---------------- */
+  function generateSchedule(client) {
+    const first = parseDateOnly(client.nextPaymentDate);
+    const totals = clientTotals(client);
+    const rows = [];
+    for (let i = 0; i < client.installmentCount; i++) {
+      const d = first ? addDays(first, i * client.frequency) : null;
+      const iso = d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}` : null;
+      rows.push({
+        num: i + 1,
+        dateISO: iso,
+        amount: client.installment,
+        paid: i < totals.paidInstallments,
+      });
+    }
+    return rows;
+  }
+
+  document.getElementById("cd-calendar-btn").addEventListener("click", () => {
+    const client = state.clients.find((c) => c.id === activeClientId);
+    if (!client) return;
+    setText("sch-name", client.name);
+    const rows = generateSchedule(client);
+    const listEl = document.getElementById("schedule-list");
+    listEl.innerHTML = rows.map((r) => `
+      <div class="schedule-item ${r.paid ? "is-paid" : ""}">
+        <div class="schedule-left">
+          <span class="schedule-num">${r.paid ? "✓" : r.num}</span>
+          <span class="schedule-date">${formatDateDisplay(r.dateISO)}</span>
+        </div>
+        <span class="schedule-amount">${formatMoney(r.amount)}</span>
+      </div>`).join("");
+    openModal("modal-schedule");
+  });
+
+  function bindClientCards(container) {
+    container.querySelectorAll(".client-card").forEach((card) => {
+      card.addEventListener("click", () => openClientDetail(card.dataset.id));
+    });
+  }
+
+  /* ==========================================================
+     RENDER: CLIENTES
+     ========================================================== */
+  const clientSearchInput = document.getElementById("client-search");
+  let clientFilter = "all";
+
+  document.getElementById("client-filters").addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip");
+    if (!chip) return;
+    clientFilter = chip.dataset.filter;
+    document.querySelectorAll("#client-filters .chip").forEach((c) => c.classList.toggle("active", c === chip));
+    renderClients();
+  });
+
+  function matchesFilter(client, filter) {
+    const totals = clientTotals(client);
+    const status = clientStatus(client);
+    if (filter === "all") return true;
+    if (filter === "today") return totals.remaining > 0 && currentDueDateISO(client, totals.paidInstallments) === todayISO();
+    if (filter === "ok") return status.code === "ok";
+    if (filter === "partial") return status.code === "partial";
+    if (filter === "late") return status.code === "late";
+    if (filter === "done") return status.code === "done";
+    return true;
+  }
+
+  function renderClients() {
+    const query = (clientSearchInput.value || "").trim().toLowerCase();
+    let list = [...state.clients].sort((a, b) => b.createdAt - a.createdAt);
+    if (query) {
+      list = list.filter((c) => c.name.toLowerCase().includes(query) || (c.phone || "").toLowerCase().includes(query));
+    }
+    list = list.filter((c) => matchesFilter(c, clientFilter));
+    const container = document.getElementById("clients-list");
+    const emptyEl = document.getElementById("clients-empty");
+    container.innerHTML = list.length
+      ? list.map(renderClientCard).join("")
+      : "";
+    emptyEl.classList.toggle("hidden", list.length > 0);
+    bindClientCards(container);
+  }
+  clientSearchInput.addEventListener("input", renderClients);
+
+  /* ==========================================================
+     RENDER: PAGOS DE HOY
+     ========================================================== */
+  function renderPaymentsScreen() {
+    const t = todayISO();
+    let paid = 0, pending = 0, noPay = 0, collected = 0;
+    state.clients.forEach((c) => {
+      const totals = clientTotals(c);
+      if (totals.remaining <= 0) return;
+      const status = clientStatus(c);
+      if (status.code === "partial" || (paidToday(c))) paid++;
+      else if (status.code === "late" && markedNoPayToday(c)) noPay++;
+      else pending++;
+    });
+    state.payments.filter((p) => p.type === "payment" && p.date === t).forEach((p) => (collected += p.amount));
+
+    setText("pay-count-paid", paid);
+    setText("pay-count-pending", pending);
+    setText("pay-collected", displayMoney(collected));
+    setText("pay-count-no", noPay);
+
+    const active = state.clients.filter((c) => clientTotals(c).remaining > 0);
+    const container = document.getElementById("today-clients-list");
+    container.innerHTML = active.length
+      ? active.sort((a, b) => b.createdAt - a.createdAt).map(renderClientCard).join("")
+      : `<p class="empty-state"><span class="es-emoji">🔥</span><span>Hoy estás al día. No tienes cobros activos.</span></p>`;
+    bindClientCards(container);
+  }
+
+  /* ==========================================================
+     RENDER: PORTAFOLIO
+     ========================================================== */
+  function renderPortfolio() {
+    const lent = state.clients.reduce((sum, c) => sum + clientTotals(c).remaining, 0);
+    const capital = state.money + lent;
+    let interestRemaining = 0;
+    state.clients.forEach((c) => {
+      const totals = clientTotals(c);
+      if (totals.remaining <= 0) return;
+      const principalRemainingRatio = c.totalToCollect > 0 ? totals.remaining / c.totalToCollect : 0;
+      interestRemaining += c.interestAmount * principalRemainingRatio;
+    });
+
+    setText("pf-available", displayMoney(state.money));
+    setText("pf-lent", displayMoney(lent));
+    setText("pf-capital", displayMoney(capital));
+    setText("pf-interest", displayMoney(interestRemaining));
+
+    const log = [...state.moneyLog].sort((a, b) => b.createdAt - a.createdAt).slice(0, 40);
+    const container = document.getElementById("pf-money-log");
+    container.innerHTML = log.length
+      ? log.map((m) => `
+        <div class="movement-item">
+          <div class="m-left">
+            <p class="m-title">${escapeHTML(m.title)}</p>
+            <p class="m-date">${formatDateDisplay(m.date)}</p>
+          </div>
+          <div class="m-amount ${m.amount >= 0 ? "pos" : "neg"}">${m.amount >= 0 ? "+" : "-"}${formatMoney(Math.abs(m.amount))}</div>
+        </div>`).join("")
+      : `<p class="empty-state">Aún no hay movimientos.</p>`;
+  }
+
+  function logMovement(title, amount, date) {
+    state.moneyLog.push({ id: uid(), title, amount, date: date || todayISO(), createdAt: Date.now() });
+    persistMoneyLog();
+  }
+
+  /* ==========================================================
+     REFRESCAR TODO
+     ========================================================== */
+  function refreshAll() {
+    renderTopbarDate();
+    applyVisibilityIconOnly();
+    const activeScreen = Object.keys(screens).find((k) => screens[k].classList.contains("active")) || "home";
+    goTo(activeScreen);
+  }
+  function applyVisibilityIconOnly() {
+    toggleVisBtn.classList.toggle("is-hidden", !state.moneyVisible);
+  }
+
+  /* ==========================================================
+     MODALES — control genérico
+     ========================================================== */
+  function openModal(id) { document.getElementById(id).classList.remove("hidden"); }
+  function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
+  document.querySelectorAll("[data-close]").forEach((el) => {
+    el.addEventListener("click", () => closeModal(el.dataset.close));
+  });
+  document.querySelectorAll(".modal-overlay").forEach((ov) => {
+    ov.addEventListener("click", (e) => {
+      if (e.target === ov) ov.classList.add("hidden");
+    });
+  });
+
+  function confirmDialog(text, onConfirm) {
+    document.getElementById("confirm-text").textContent = text;
+    openModal("modal-confirm");
+    const okBtn = document.getElementById("confirm-ok");
+    const cancelBtn = document.getElementById("confirm-cancel");
+    const cleanup = () => {
+      okBtn.removeEventListener("click", onOk);
+      cancelBtn.removeEventListener("click", onCancel);
+    };
+    const onOk = () => {
+      cleanup();
+      withLoading(okBtn, () => {
+        closeModal("modal-confirm");
+        onConfirm();
+      }, 320);
+    };
+    const onCancel = () => { cleanup(); closeModal("modal-confirm"); };
+    okBtn.addEventListener("click", onOk);
+    cancelBtn.addEventListener("click", onCancel);
+  }
+
+  /* ---------------- FORMATEO EN VIVO DE CAMPOS $ ---------------- */
+  function bindMoneyInput(input) {
+    input.addEventListener("input", () => {
+      const raw = parseMoneyInput(input.value);
+      input.value = raw ? formatMoney(raw) : "";
+    });
+  }
+  ["am-amount", "nc-amount", "pay-amount"].forEach((id) => {
+    bindMoneyInput(document.getElementById(id));
+  });
+
+  /* ==========================================================
+     MODAL: AGREGAR DINERO
+     ========================================================== */
+  document.getElementById("btn-add-money").addEventListener("click", () => {
+    document.getElementById("am-amount").value = "";
+    document.getElementById("am-note").value = "";
+    document.getElementById("am-date").value = todayISO();
+    document.getElementById("am-error").textContent = "";
+    openModal("modal-add-money");
+  });
+
+  document.getElementById("am-save").addEventListener("click", (e) => {
+    const amount = parseMoneyInput(document.getElementById("am-amount").value);
+    const date = document.getElementById("am-date").value || todayISO();
+    const note = document.getElementById("am-note").value.trim();
+    const errorEl = document.getElementById("am-error");
+
+    if (amount <= 0) {
+      errorEl.textContent = "Ingresa una cantidad válida.";
+      return;
+    }
+    withLoading(e.currentTarget, () => {
+      state.money += amount;
+      persistMoney();
+      logMovement(note ? `Dinero agregado — ${note}` : "Dinero agregado", amount, date);
+      closeModal("modal-add-money");
+      toast("✓ Dinero agregado", `Se agregaron ${formatMoney(amount)} a tu bolsillo.`);
+      refreshAll();
+      pulse(document.getElementById("home-available"));
+    });
+  });
+
+  /* ==========================================================
+     MODAL: NUEVO CLIENTE
+     ========================================================== */
+  const ncFields = ["nc-name", "nc-phone", "nc-amount", "nc-interest", "nc-installment-count", "nc-frequency", "nc-next-date", "nc-note"];
+
+  document.getElementById("fab-new-client").addEventListener("click", openNewClientModal);
+  function openNewClientModal() {
+    ncFields.forEach((id) => {
+      const el = document.getElementById(id);
+      if (id === "nc-frequency") el.value = "7"; // semanal por defecto
+      else if (id === "nc-interest") el.value = "20"; // 20% por defecto
+      else if (el.tagName === "SELECT") el.selectedIndex = 0;
+      else el.value = "";
+    });
+    document.getElementById("nc-next-date").value = todayISO();
+    document.getElementById("nc-error").textContent = "";
+    updateLoanPreview();
+    openModal("modal-new-client");
+  }
+
+  function computeInstallment(total, installmentCount) {
+    if (!installmentCount || installmentCount <= 0) return 0;
+    return Math.round(total / installmentCount);
+  }
+
+  function updateLoanPreview() {
+    const amount = parseMoneyInput(document.getElementById("nc-amount").value);
+    const interest = parseFloat(document.getElementById("nc-interest").value) || 0;
+    const installmentCount = parseInt(document.getElementById("nc-installment-count").value, 10) || 0;
+    const interestAmount = Math.round(amount * (interest / 100));
+    const total = amount + interestAmount;
+    const installment = computeInstallment(total, installmentCount);
+    setText("nc-preview-interest", formatMoney(interestAmount));
+    setText("nc-preview-total", formatMoney(total));
+    setText("nc-preview-installment", installment ? formatMoney(installment) : "—");
+  }
+  ["nc-amount", "nc-interest", "nc-installment-count"].forEach((id) => {
+    document.getElementById(id).addEventListener("input", updateLoanPreview);
+  });
+
+  document.getElementById("nc-save").addEventListener("click", (e) => {
+    const name = document.getElementById("nc-name").value.trim();
+    const phone = document.getElementById("nc-phone").value.trim();
+    const amount = parseMoneyInput(document.getElementById("nc-amount").value);
+    const interest = parseFloat(document.getElementById("nc-interest").value) || 0;
+    const installmentCount = parseInt(document.getElementById("nc-installment-count").value, 10) || 0;
+    const frequency = parseInt(document.getElementById("nc-frequency").value, 10);
+    const nextDate = document.getElementById("nc-next-date").value;
+    const note = document.getElementById("nc-note").value.trim();
+    const errorEl = document.getElementById("nc-error");
+
+    const interestAmount = Math.round(amount * (interest / 100));
+    const totalToCollect = amount + interestAmount;
+    const installment = computeInstallment(totalToCollect, installmentCount);
+
+    if (!name) return (errorEl.textContent = "El nombre no puede estar vacío.");
+    if (amount <= 0) return (errorEl.textContent = "El préstamo no puede ser $0.");
+    if (amount > state.money) return (errorEl.textContent = `No tienes suficiente dinero disponible. Tienes ${formatMoney(state.money)}.`);
+    if (interest < 0) return (errorEl.textContent = "El interés no puede ser menor a 0%.");
+    if (interest > 100) return (errorEl.textContent = "El interés no puede ser mayor a 100%.");
+    if (!installmentCount || installmentCount <= 0) return (errorEl.textContent = "Indica la cantidad de cuotas.");
+    if (installment <= 0) return (errorEl.textContent = "Revisa el préstamo: la cuota calculada da $0.");
+    if (!nextDate) return (errorEl.textContent = "Selecciona la fecha del próximo cobro.");
+
+    withLoading(e.currentTarget, () => {
+      const client = {
+        id: uid(),
+        name, phone,
+        amount, interest, interestAmount,
+        totalToCollect,
+        installment,
+        frequency,
+        installmentCount,
+        paidInstallments: 0,
+        remaining: totalToCollect,
+        interestRemaining: interestAmount,
+        nextPaymentDate: nextDate,
+        note,
+        noPaymentToday: false,
+        createdAt: Date.now(),
+      };
+
+      state.clients.push(client);
+      persistClients();
+
+      state.money -= amount;
+      persistMoney();
+      logMovement(`Préstamo a ${name}`, -amount, todayISO());
+
+      closeModal("modal-new-client");
+      toast("✓ Cliente registrado", `${name} recibió ${formatMoney(amount)}.`);
+
+      setText("rc-name", name);
+      setText("rc-amount", formatMoney(amount));
+      setText("rc-interest", formatMoney(interestAmount));
+      setText("rc-total", formatMoney(totalToCollect));
+      setText("rc-installment", formatMoney(installment));
+      setText("rc-date", formatDateDisplay(nextDate));
+      lastLoanReceiptText = `🧾 CARTERA CHICHÓN — Factura del préstamo
+Cliente: ${name}
+Prestado: ${formatMoney(amount)}
+Interés: ${formatMoney(interestAmount)}
+Total a cobrar: ${formatMoney(totalToCollect)}
+Cuota: ${formatMoney(installment)}
+Primer cobro: ${formatDateDisplay(nextDate)}`;
+      openModal("modal-receipt");
+
+      refreshAll();
+    }, 550);
+  });
+
+  let lastLoanReceiptText = "";
+  document.getElementById("rc-print").addEventListener("click", () => window.print());
+  document.getElementById("rc-share").addEventListener("click", async () => {
+    if (navigator.share) {
+      try { await navigator.share({ title: "Factura del préstamo", text: lastLoanReceiptText }); }
+      catch (e) { /* cancelado */ }
+    } else if (navigator.clipboard) {
+      try { await navigator.clipboard.writeText(lastLoanReceiptText); toast("📋 Copiado", "La factura se copió al portapapeles."); }
+      catch (e) { toast("No se pudo compartir", "Tu dispositivo no lo soporta.", true); }
+    } else {
+      toast("No se pudo compartir", "Tu dispositivo no lo soporta.", true);
+    }
+  });
+
+  function dueAmountFor(client) {
+    const totals = clientTotals(client);
+    if (totals.remaining <= 0) return 0;
+    const status = clientStatus(client);
+    if (status.code === "late") {
+      const overdue = overdueInfo(client);
+      const amt = overdue.amount || client.installment;
+      return Math.min(totals.remaining, amt);
+    }
+    return Math.min(totals.remaining, client.installment);
+  }
+
+  /* ==========================================================
+     DETALLE DE CLIENTE
+     ========================================================== */
+  let activeClientId = null;
+
+  function openClientDetail(id) {
+    activeClientId = id;
+    renderClientDetail();
+    openModal("modal-client-detail");
+  }
+
+  function renderClientDetail() {
+    const client = state.clients.find((c) => c.id === activeClientId);
+    if (!client) return closeModal("modal-client-detail");
+    const totals = clientTotals(client);
+    const status = clientStatus(client);
+    const overdue = overdueInfo(client);
+
+    setText("cd-name", client.name);
+    const statusEl = document.getElementById("cd-status");
+    statusEl.textContent = status.label;
+    statusEl.className = "status-pill " + status.cls;
+
+    setText("cd-amount", formatMoney(client.amount));
+    setText("cd-total", formatMoney(client.totalToCollect));
+    setText("cd-paid", formatMoney(totals.totalPaid));
+    setText("cd-balance", formatMoney(totals.remaining));
+    setText("cd-installment", formatMoney(client.installment));
+    setText("cd-paid-count", totals.paidInstallments);
+    setText("cd-pending-count", totals.pendingInstallments);
+    setText("cd-next", formatDateDisplay(currentDueDateISO(client, totals.paidInstallments)));
+
+    const overdueBox = document.getElementById("cd-overdue-box");
+    if (status.code === "late" && overdue.amount > 0) {
+      overdueBox.classList.remove("hidden");
+      setText("cd-overdue-count", overdue.installments);
+      setText("cd-overdue-amount", formatMoney(overdue.amount));
+    } else {
+      overdueBox.classList.add("hidden");
+    }
+
+    const history = [...totals.payments, ...state.payments.filter((p) => p.clientId === client.id && p.type === "no_payment")]
+      .sort((a, b) => b.createdAt - a.createdAt);
+    const historyEl = document.getElementById("cd-history");
+    historyEl.innerHTML = history.length
+      ? history.map((p) => `
+        <div class="history-item ${p.type === "no_payment" ? "no-payment" : ""}">
+          <span class="h-date">${formatDateDisplay(p.date)}</span>
+          <span class="h-amount">${p.type === "no_payment" ? "No pagó" : formatMoney(p.amount)}</span>
+        </div>`).join("")
+      : `<p class="empty-state">Sin pagos registrados todavía.</p>`;
+
+    setText("cd-history-paid", formatMoney(totals.totalPaid));
+    setText("cd-history-balance", formatMoney(totals.remaining));
+
+    const payCompleteBtn = document.getElementById("cd-pay-complete-btn");
+    const payPartialBtn = document.getElementById("cd-pay-partial-btn");
+    [payCompleteBtn, payPartialBtn].forEach((btn) => {
+      btn.disabled = totals.remaining <= 0;
+      btn.style.opacity = totals.remaining <= 0 ? "0.5" : "1";
+    });
+  }
+
+  /* ---------------- RECIBO DE PAGO ---------------- */
+  let lastReceiptText = "";
+  function openPaymentReceipt(client, amount, totals, wasPartial) {
+    const now = new Date();
+    const instPending = Math.max(0, client.installment - amount);
+    const statusTxt = totals.remaining <= 0 ? "🔵 Préstamo completado" : (wasPartial ? "🟡 Pago parcial" : "✓ Pago registrado");
+
+    setText("pr-name", client.name);
+    setText("pr-date", formatDateDisplay(todayISO()));
+    setText("pr-time", now.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" }));
+    setText("pr-installment", formatMoney(client.installment));
+    setText("pr-paid", formatMoney(amount));
+    setText("pr-installment-pending", formatMoney(instPending));
+    setText("pr-balance", formatMoney(totals.remaining));
+    setText("pr-status", statusTxt);
+
+    lastReceiptText = `🧾 CARTERA CHICHÓN — Recibo de pago
+Cliente: ${client.name}
+Fecha: ${formatDateDisplay(todayISO())}
+Hora: ${now.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })}
+Cuota: ${formatMoney(client.installment)}
+Pagó: ${formatMoney(amount)}
+Pendiente de esta cuota: ${formatMoney(instPending)}
+Saldo pendiente: ${formatMoney(totals.remaining)}
+Estado: ${statusTxt}`;
+
+    openModal("modal-payment-receipt");
+  }
+
+  document.getElementById("pr-print").addEventListener("click", () => window.print());
+  document.getElementById("pr-share").addEventListener("click", async () => {
+    if (navigator.share) {
+      try { await navigator.share({ title: "Recibo de pago", text: lastReceiptText }); }
+      catch (e) { /* el usuario canceló, no pasa nada */ }
+    } else if (navigator.clipboard) {
+      try { await navigator.clipboard.writeText(lastReceiptText); toast("📋 Copiado", "El recibo se copió al portapapeles."); }
+      catch (e) { toast("No se pudo compartir", "Tu dispositivo no lo soporta.", true); }
+    } else {
+      toast("No se pudo compartir", "Tu dispositivo no lo soporta.", true);
+    }
+  });
+
+  document.getElementById("cd-pay-complete-btn").addEventListener("click", () => {
+    const client = state.clients.find((c) => c.id === activeClientId);
+    if (!client) return;
+    const totals = clientTotals(client);
+    if (totals.remaining <= 0) return;
+    const dueAmount = dueAmountFor(client);
+    if (dueAmount <= 0) return;
+
+    confirmDialog(`¿Confirmar pago completo de ${formatMoney(dueAmount)} de ${client.name}?`, () => {
+      state.payments.push({
+        id: uid(),
+        clientId: client.id,
+        amount: dueAmount,
+        date: todayISO(),
+        type: "payment",
+        createdAt: Date.now(),
+      });
+      persistPayments();
+
+      state.money += dueAmount;
+      persistMoney();
+      logMovement(`Pago de ${client.name}`, dueAmount, todayISO());
+
+      const newBalance = totals.remaining - dueAmount;
+      const newTotals = clientTotals(client);
+      const next = newTotals.remaining > 0 ? currentDueDateISO(client, newTotals.paidInstallments) : null;
+      toast(
+        "✓ Pago completo registrado",
+        newBalance > 0
+          ? `${client.name} pagó ${formatMoney(dueAmount)} · Saldo: ${formatMoney(newBalance)} · Próxima cuota: ${formatDateDisplay(next)}`
+          : `${client.name} pagó ${formatMoney(dueAmount)} · 🔵 Préstamo completado.`
+      );
+
+      renderClientDetail();
+      refreshAll();
+      openPaymentReceipt(client, dueAmount, newTotals, false);
+    });
+  });
+
+  document.getElementById("cd-pay-partial-btn").addEventListener("click", () => {
+    const client = state.clients.find((c) => c.id === activeClientId);
+    if (!client) return;
+    const totals = clientTotals(client);
+    if (totals.remaining <= 0) return;
+
+    setText("pay-client-name", client.name);
+    setText("pay-installment", formatMoney(client.installment));
+    setText("pay-prev-balance", formatMoney(totals.remaining));
+    setText("pay-total-pending", formatMoney(totals.remaining));
+    document.getElementById("pay-amount").value = "";
+    document.getElementById("pay-error").textContent = "";
+    openModal("modal-pay");
+  });
+
+  document.getElementById("pay-save").addEventListener("click", (e) => {
+    const client = state.clients.find((c) => c.id === activeClientId);
+    if (!client) return;
+    const totals = clientTotals(client);
+    const amount = parseMoneyInput(document.getElementById("pay-amount").value);
+    const errorEl = document.getElementById("pay-error");
+
+    if (amount <= 0) return (errorEl.textContent = "El pago no puede ser $0.");
+    if (amount > totals.remaining) return (errorEl.textContent = `El pago no puede superar el saldo de ${formatMoney(totals.remaining)}.`);
+
+    withLoading(e.currentTarget, () => {
+      state.payments.push({
+        id: uid(),
+        clientId: client.id,
+        amount,
+        date: todayISO(),
+        type: "payment",
+        createdAt: Date.now(),
+      });
+      persistPayments();
+
+      state.money += amount;
+      persistMoney();
+      logMovement(`Pago de ${client.name}`, amount, todayISO());
+
+      closeModal("modal-pay");
+      const newBalance = totals.remaining - amount;
+      const newTotals = clientTotals(client);
+      const covered = amount >= client.installment;
+      toast(
+        covered ? "✓ Pago registrado" : "💰 Abono parcial registrado",
+        newBalance > 0
+          ? `${client.name} pagó ${formatMoney(amount)} · Saldo: ${formatMoney(newBalance)} · Pendiente de esta cuota: ${formatMoney(Math.max(0, client.installment - amount))}`
+          : `${client.name} pagó ${formatMoney(amount)} · 🔵 Préstamo completado.`
+      );
+
+      renderClientDetail();
+      refreshAll();
+      openPaymentReceipt(client, amount, newTotals, !covered);
+    });
+  });
+
+  document.getElementById("cd-nopay-btn").addEventListener("click", () => {
+    const client = state.clients.find((c) => c.id === activeClientId);
+    if (!client) return;
+    confirmDialog(`¿Marcar a ${client.name} como "No pagó" hoy?`, () => {
+      const t = todayISO();
+      const now = new Date();
+      const already = state.payments.some((p) => p.clientId === client.id && p.type === "no_payment" && p.date === t);
+      if (!already) {
+        state.payments.push({
+          id: uid(),
+          clientId: client.id,
+          amount: 0,
+          date: t,
+          type: "no_payment",
+          createdAt: Date.now(),
+        });
+        persistPayments();
+      }
+
+      const totals = clientTotals(client);
+      const overdue = overdueInfo(client);
+      const hora = now.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
+      const next = currentDueDateISO(client, totals.paidInstallments);
+      const cuotasTxt = overdue.installments === 1 ? "1 cuota atrasada" : `${overdue.installments} cuotas atrasadas`;
+      toast(
+        `❌ ${client.name} no pagó hoy (${hora})`,
+        `${cuotasTxt} · Pendiente: ${formatMoney(overdue.amount)} · Próxima cuota: ${formatDateDisplay(next)}`,
+        true
+      );
+      renderClientDetail();
+      refreshAll();
+    });
+  });
+
+  document.getElementById("cd-delete-btn").addEventListener("click", () => {
+    const client = state.clients.find((c) => c.id === activeClientId);
+    if (!client) return;
+    confirmDialog(`¿Eliminar a ${client.name}? Esta acción no se puede deshacer.`, () => {
+      const totals = clientTotals(client);
+      // Si el cliente aún tiene saldo pendiente, ese dinero ya salió de tu bolsillo
+      // y no se ha recuperado: no se toca el dinero disponible al eliminarlo,
+      // solo se limpian sus registros para no dañar el historial financiero.
+      state.clients = state.clients.filter((c) => c.id !== client.id);
+      state.payments = state.payments.filter((p) => p.clientId !== client.id);
+      persistClients();
+      persistPayments();
+      closeModal("modal-client-detail");
+      toast("Cliente eliminado", `${client.name} fue eliminado.`);
+      refreshAll();
+    });
+  });
+
+  /* ==========================================================
+     PERFIL — foto y nombre
+     ========================================================== */
+  const PROFILE_KEY = "mb_profile";
+  function getProfile() { return getJSON(PROFILE_KEY, { name: "", displayName: "", photo: "", createdAt: null }); }
+  function setProfile(p) { setJSON(PROFILE_KEY, p); }
+  function initials(name) {
+    if (!name) return "CC";
+    const parts = name.trim().split(/\s+/);
+    return (parts[0][0] + (parts[1] ? parts[1][0] : "")).toUpperCase();
+  }
+
+  function renderProfile() {
+    const p = getProfile();
+    const shownName = p.displayName || p.name || "Cartera Chichón";
+    setText("profile-display-name", shownName);
+    const avatarEl = document.getElementById("profile-avatar");
+    if (p.photo) {
+      avatarEl.style.backgroundImage = `url(${p.photo})`;
+      avatarEl.classList.add("has-photo");
+      avatarEl.textContent = "";
+    } else {
+      avatarEl.style.backgroundImage = "";
+      avatarEl.classList.remove("has-photo");
+      avatarEl.textContent = initials(p.name) || "CC";
+    }
+  }
+
+  document.getElementById("btn-edit-profile").addEventListener("click", () => {
+    const p = getProfile();
+    document.getElementById("ep-name").value = p.name || "";
+    document.getElementById("ep-display-name").value = p.displayName || "";
+    document.getElementById("ep-error").textContent = "";
+    const preview = document.getElementById("ep-photo-preview");
+    if (p.photo) {
+      preview.style.backgroundImage = `url(${p.photo})`;
+      preview.classList.add("has-photo");
+      preview.textContent = "";
+    } else {
+      preview.style.backgroundImage = "";
+      preview.classList.remove("has-photo");
+      preview.textContent = "CC";
+    }
+    openModal("modal-edit-profile");
+  });
+
+  let epPhotoData = null;
+  document.getElementById("ep-photo-input").addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      epPhotoData = reader.result;
+      const preview = document.getElementById("ep-photo-preview");
+      preview.style.backgroundImage = `url(${epPhotoData})`;
+      preview.classList.add("has-photo");
+      preview.textContent = "";
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById("ep-save").addEventListener("click", (e) => {
+    const name = document.getElementById("ep-name").value.trim();
+    const displayName = document.getElementById("ep-display-name").value.trim();
+    const errorEl = document.getElementById("ep-error");
+    if (!name) return (errorEl.textContent = "Escribe tu nombre.");
+    withLoading(e.currentTarget, () => {
+      const current = getProfile();
+      setProfile({ name, displayName, photo: epPhotoData || current.photo || "", createdAt: current.createdAt || Date.now() });
+      epPhotoData = null;
+      closeModal("modal-edit-profile");
+      toast("✓ Perfil actualizado", "Tus datos quedaron guardados.");
+      renderProfile();
+      pulse(document.getElementById("profile-avatar"));
+      refreshAll();
+    });
+  });
+
+  /* ==========================================================
+     CAMBIAR PIN
+     ========================================================== */
+  document.getElementById("btn-change-pin").addEventListener("click", () => {
+    ["cp-current", "cp-new", "cp-confirm"].forEach((id) => (document.getElementById(id).value = ""));
+    document.getElementById("cp-error").textContent = "";
+    openModal("modal-change-pin");
+  });
+
+  document.getElementById("cp-save").addEventListener("click", () => {
+    const current = document.getElementById("cp-current").value;
+    const next = document.getElementById("cp-new").value;
+    const confirm = document.getElementById("cp-confirm").value;
+    const errorEl = document.getElementById("cp-error");
+    const saved = localStorage.getItem(KEYS.PIN);
+
+    if (!/^\d{4}$/.test(current)) return (errorEl.textContent = "El PIN actual debe tener 4 números.");
+    if (current !== saved) return (errorEl.textContent = "El PIN actual no es correcto.");
+    if (!/^\d{4}$/.test(next)) return (errorEl.textContent = "El nuevo PIN debe tener 4 números.");
+    if (next !== confirm) return (errorEl.textContent = "El nuevo PIN no coincide con la confirmación.");
+
+    localStorage.setItem(KEYS.PIN, next);
+    closeModal("modal-change-pin");
+    toast("✓ PIN actualizado", "Tu nuevo PIN quedó guardado.");
+  });
+
+  /* ==========================================================
+     CERRAR SESIÓN
+     ========================================================== */
+  document.getElementById("btn-logout").addEventListener("click", () => {
+    confirmDialog("¿Cerrar sesión? Tus datos no se van a borrar.", () => {
+      appEl.classList.add("hidden");
+      lockScreen.classList.remove("hidden");
+      initLockScreen();
+    });
+  });
+
+  /* ==========================================================
+     INICIO
+     ========================================================== */
+  document.getElementById("am-date").value = todayISO();
+  applyVisibilityIconOnly();
+  renderProfile();
+  bootApp();
+
+  /* ---------------- REGISTRO DEL SERVICE WORKER (PWA) ---------------- */
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("service-worker.js").catch(() => {
+        /* si falla, la app sigue funcionando en línea sin problema */
+      });
+    });
+  }
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "Cartera Chichón · Mi Bolsillo",
+  "short_name": "Mi Bolsillo",
+  "description": "Billetera personal para administrar dinero prestado, cuotas y pagos.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A0C10",
+  "theme_color": "#0A0C10",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
